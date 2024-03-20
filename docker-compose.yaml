@@ -1,0 +1,30 @@
+version: '3'
+
+volumes:
+  postgres_volume:
+
+services:
+  app:
+    container_name: chat_app
+    image: "${REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"
+    ports:
+      - "${GRPC_PORT_EXTERNAL}:${GRPC_PORT}"
+    entrypoint: ["/root/entrypoint.sh"]
+    volumes:
+      - ${SERVICE_PATH}/.env:/root/.env
+    profiles:
+      - server
+  postgres:
+    container_name: chat_pg
+    image: postgres:15.4
+    environment:
+      - "POSTGRES_DB=${PG_DATABASE_NAME}"
+      - "POSTGRES_USER=${PG_USER}"
+      - "POSTGRES_PASSWORD=${PG_PASSWORD}"
+    ports:
+      - "${PG_PORT}:5432"
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+    profiles:
+      - server
+      - local
