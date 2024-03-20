@@ -19,7 +19,7 @@ create table message
 (
     id         bigserial primary key,
     chat_id    bigint references chat (id) not null,
-    from       varchar(50)                 not null,
+    author       varchar(50)                 not null,
     created_at timestamp                   not null default now(),
     updated_at timestamp
 );
