@@ -23,8 +23,43 @@ type server struct {
 }
 
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	fmt.Printf("%+v\n", req.GetUsernames())
-	return &desc.CreateResponse{}, nil
+	usernames := req.GetUsernames()
+
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return &desc.CreateResponse{}, status.Errorf(codes.Internal, "failed to begin transaction: %v", err)
+	}
+
+	var chatId int64
+	err = tx.QueryRow(ctx, "INSERT INTO chat DEFAULT VALUES RETURNING id").Scan(&chatId)
+	if err != nil {
+		return &desc.CreateResponse{}, status.Errorf(codes.Internal, "failed to insert chat: %v", err)
+	}
+
+	builderInsertUserChat := sq.Insert("user_chat").
+		PlaceholderFormat(sq.Dollar).
+		Columns("chat_id", "username")
+
+	for _, username := range usernames {
+		builderInsertUserChat = builderInsertUserChat.Values(chatId, username)
+	}
+
+	query, args, err := builderInsertUserChat.ToSql()
+	if err != nil {
+		return &desc.CreateResponse{}, status.Errorf(codes.Internal, "failed to build chat query: %v", err)
+	}
+
+	_, err = tx.Exec(ctx, query, args...)
+	if err != nil {
+		return &desc.CreateResponse{}, status.Errorf(codes.Internal, "failed to create user chat: %v", err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return &desc.CreateResponse{}, status.Errorf(codes.Internal, "failed to commit transaction: %v", err)
+	}
+
+	return &desc.CreateResponse{Id: chatId}, nil
 }
 
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
