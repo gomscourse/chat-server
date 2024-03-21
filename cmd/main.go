@@ -30,6 +30,8 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 		return &desc.CreateResponse{}, status.Errorf(codes.Internal, "failed to begin transaction: %v", err)
 	}
 
+	defer tx.Rollback(ctx)
+
 	var chatId int64
 	err = tx.QueryRow(ctx, "INSERT INTO chat DEFAULT VALUES RETURNING id").Scan(&chatId)
 	if err != nil {
