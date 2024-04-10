@@ -12,7 +12,6 @@ import (
 	chatRepo "github.com/gomscourse/chat-server/internal/repository/chat"
 	"github.com/gomscourse/chat-server/internal/service"
 	chatService "github.com/gomscourse/chat-server/internal/service/chat"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
 )
 
@@ -20,7 +19,6 @@ type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
 
-	pgPool         *pgxpool.Pool
 	dbClient       db.Client
 	chatRepository repository.ChatRepository
 	chatService    service.ChatService
@@ -57,30 +55,18 @@ func (sp *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return sp.grpcConfig
 }
 
-func (sp *serviceProvider) PGPool(ctx context.Context) *pgxpool.Pool {
-	if sp.pgPool == nil {
-		pool, err := pgxpool.Connect(ctx, sp.PgConfig().DSN())
-		if err != nil {
-			log.Fatalf("failed to initialize PG pool: %s", err.Error())
-		}
-
-		closer.Add(func() error {
-			pool.Close()
-			return nil
-		})
-
-		sp.pgPool = pool
-	}
-
-	return sp.pgPool
-}
-
 func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if sp.dbClient == nil {
 		client, err := pg.New(ctx, sp.PgConfig().DSN())
 		if err != nil {
 			log.Fatalf("failed to initialize DB client: %s", err.Error())
 		}
+
+		if err = client.DB().Ping(ctx); err != nil {
+			log.Fatalf("failed to ping DB: %s", err.Error())
+		}
+
+		closer.Add(client.Close)
 
 		sp.dbClient = client
 	}
