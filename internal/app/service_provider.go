@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	chatApi "github.com/gomscourse/chat-server/internal/api/chat"
+	"github.com/gomscourse/chat-server/internal/client/db"
+	"github.com/gomscourse/chat-server/internal/client/db/pg"
 	"github.com/gomscourse/chat-server/internal/closer"
 	"github.com/gomscourse/chat-server/internal/config"
 	"github.com/gomscourse/chat-server/internal/config/env"
@@ -19,6 +21,7 @@ type serviceProvider struct {
 	grpcConfig config.GRPCConfig
 
 	pgPool         *pgxpool.Pool
+	dbClient       db.Client
 	chatRepository repository.ChatRepository
 	chatService    service.ChatService
 	chatImpl       *chatApi.Implementation
@@ -72,9 +75,22 @@ func (sp *serviceProvider) PGPool(ctx context.Context) *pgxpool.Pool {
 	return sp.pgPool
 }
 
+func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
+	if sp.dbClient == nil {
+		client, err := pg.New(ctx, sp.PgConfig().DSN())
+		if err != nil {
+			log.Fatalf("failed to initialize DB client: %s", err.Error())
+		}
+
+		sp.dbClient = client
+	}
+
+	return sp.dbClient
+}
+
 func (sp *serviceProvider) ChatRepository(ctx context.Context) repository.ChatRepository {
 	if sp.chatRepository == nil {
-		sp.chatRepository = chatRepo.NewChatRepository(sp.PGPool(ctx))
+		sp.chatRepository = chatRepo.NewChatRepository(sp.DBClient(ctx))
 	}
 
 	return sp.chatRepository

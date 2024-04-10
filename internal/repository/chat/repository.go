@@ -3,22 +3,28 @@ package chat
 import (
 	"context"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/gomscourse/chat-server/internal/client/db"
 	"github.com/gomscourse/chat-server/internal/repository"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
-func NewChatRepository(db *pgxpool.Pool) repository.ChatRepository {
+func NewChatRepository(db db.Client) repository.ChatRepository {
 	return &repo{db: db}
 }
 
 func (r repo) CreateChat(ctx context.Context) (int64, error) {
 	var chatId int64
-	err := r.db.QueryRow(ctx, "INSERT INTO chat DEFAULT VALUES RETURNING id").Scan(&chatId)
+
+	q := db.Query{
+		Name:     "create_chat_query",
+		QueryRow: "INSERT INTO chat DEFAULT VALUES RETURNING id",
+	}
+
+	err := r.db.DB().QueryRowContext(ctx, q).Scan(&chatId)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to insert chat")
 	}
@@ -30,7 +36,12 @@ func (r repo) DeleteChat(ctx context.Context, id int64) error {
 	deleteBuilder := sq.Delete("chat").PlaceholderFormat(sq.Dollar).Where(sq.Eq{"id": id})
 	query, args, err := deleteBuilder.ToSql()
 
-	_, err = r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "delete_chat_query",
+		QueryRow: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete chat")
 	}
@@ -52,7 +63,12 @@ func (r repo) AddUsersToChat(ctx context.Context, chatID int64, usernames []stri
 		return errors.Wrap(err, "failed to build chat query")
 	}
 
-	_, err = r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "add_users_to_chat_query",
+		QueryRow: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to create user chat")
 	}
@@ -72,9 +88,14 @@ func (r repo) CreateMessage(ctx context.Context, chatID int64, sender string, te
 		return 0, errors.Wrap(err, "failed to build message query")
 	}
 
+	q := db.Query{
+		Name:     "create_message_query",
+		QueryRow: query,
+	}
+
 	var messageId int64
 
-	err = r.db.QueryRow(ctx, query, args...).Scan(&messageId)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&messageId)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create message")
 	}
