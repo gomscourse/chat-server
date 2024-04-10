@@ -47,17 +47,32 @@ func (p pg) ScanAllContext(ctx context.Context, dest interface{}, q db.Query, ar
 func (p pg) ExecContext(ctx context.Context, q db.Query, args ...interface{}) (pgconn.CommandTag, error) {
 	logQuery(ctx, q, args...)
 
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return tx.Exec(ctx, q.QueryRow, args...)
+	}
+
 	return p.dbc.Exec(ctx, q.QueryRow, args...)
 }
 
 func (p pg) QueryContext(ctx context.Context, q db.Query, args ...interface{}) (pgx.Rows, error) {
 	logQuery(ctx, q, args...)
 
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return tx.Query(ctx, q.QueryRow, args...)
+	}
+
 	return p.dbc.Query(ctx, q.QueryRow, args...)
 }
 
 func (p pg) QueryRowContext(ctx context.Context, q db.Query, args ...interface{}) pgx.Row {
 	logQuery(ctx, q, args...)
+
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return tx.QueryRow(ctx, q.QueryRow, args...)
+	}
 
 	return p.dbc.QueryRow(ctx, q.QueryRow, args...)
 }
