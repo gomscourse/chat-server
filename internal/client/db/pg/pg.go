@@ -12,8 +12,14 @@ import (
 	"log"
 )
 
+const TxKey = "tx"
+
 type pg struct {
 	dbc *pgxpool.Pool
+}
+
+func (p pg) BeginTx(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error) {
+	return p.dbc.BeginTx(ctx, opts)
 }
 
 func (p pg) ScanOneContext(ctx context.Context, dest interface{}, q db.Query, args ...interface{}) error {
@@ -71,4 +77,8 @@ func logQuery(ctx context.Context, q db.Query, args ...interface{}) {
 		fmt.Sprintf("sql: %s", q.Name),
 		fmt.Sprintf("query: %s", prettyQuery),
 	)
+}
+
+func MakeContextTx(ctx context.Context, tx pgx.Tx) context.Context {
+	return context.WithValue(ctx, TxKey, tx)
 }

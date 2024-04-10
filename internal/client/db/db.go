@@ -11,6 +11,16 @@ type Client interface {
 	Close() error
 }
 
+type Handler func(ctx context.Context) error
+
+type TxManager interface {
+	ReadCommitted(ctx context.Context, handler Handler) error
+}
+
+type Transactor interface {
+	BeginTx(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error)
+}
+
 type Query struct {
 	Name     string
 	QueryRow string
@@ -39,5 +49,6 @@ type SQLExecutor interface {
 type DB interface {
 	SQLExecutor
 	Pinger
+	Transactor
 	Close()
 }
