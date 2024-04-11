@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-func (s chatService) CreateChat(ctx context.Context, usernames []string) (int64, error) {
+func (s *chatService) CreateChat(ctx context.Context, usernames []string) (int64, error) {
 	var id int64
 
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {

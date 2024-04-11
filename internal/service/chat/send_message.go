@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (s chatService) SendMessage(ctx context.Context, sender, text string, chatID int64) error {
+func (s *chatService) SendMessage(ctx context.Context, sender, text string, chatID int64) error {
 	id, err := s.repo.CreateMessage(ctx, chatID, sender, text)
 	if err != nil {
 		return err
