@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
+	"time"
 )
 
 const TxKey = "tx"
@@ -47,6 +48,9 @@ func (p pg) ScanAllContext(ctx context.Context, dest interface{}, q db.Query, ar
 func (p pg) ExecContext(ctx context.Context, q db.Query, args ...interface{}) (pgconn.CommandTag, error) {
 	logQuery(ctx, q, args...)
 
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+
 	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {
 		return tx.Exec(ctx, q.QueryRow, args...)
@@ -58,6 +62,9 @@ func (p pg) ExecContext(ctx context.Context, q db.Query, args ...interface{}) (p
 func (p pg) QueryContext(ctx context.Context, q db.Query, args ...interface{}) (pgx.Rows, error) {
 	logQuery(ctx, q, args...)
 
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+
 	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {
 		return tx.Query(ctx, q.QueryRow, args...)
@@ -68,6 +75,9 @@ func (p pg) QueryContext(ctx context.Context, q db.Query, args ...interface{}) (
 
 func (p pg) QueryRowContext(ctx context.Context, q db.Query, args ...interface{}) pgx.Row {
 	logQuery(ctx, q, args...)
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
 
 	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {

@@ -10,26 +10,30 @@ import (
 func (i *Implementation) GetChatMessages(ctx context.Context, req *desc.GetChatMessagesRequest) (*desc.GetChatMessagesResponse, error) {
 	var messages []*serviceModel.ChatMessage
 	var count uint64
-	errs := make(chan error, 2)
-	defer close(errs)
+	errChan := make(chan error, 2)
+	errSlice := make([]error, 0, 2)
+	defer close(errChan)
 
 	go func() {
 		var err error
 		messages, err = i.chatService.GetChatMessages(ctx, req.GetId(), req.GetPage(), req.GetPageSize())
-		errs <- err
+		errChan <- err
 	}()
 
 	go func() {
 		var err error
 		count, err = i.chatService.GetChatMessagesCount(ctx, req.GetId())
-		errs <- err
+		errChan <- err
 	}()
 
-	for idx := 0; idx < cap(errs); idx++ {
-		err := <-errs
-		if err != nil {
-			return &desc.GetChatMessagesResponse{}, err
+	for idx := 0; idx < cap(errChan); idx++ {
+		if err := <-errChan; err != nil {
+			errSlice = append(errSlice, err)
 		}
+	}
+
+	if len(errSlice) > 0 {
+		return &desc.GetChatMessagesResponse{}, errSlice[0]
 	}
 
 	return &desc.GetChatMessagesResponse{
