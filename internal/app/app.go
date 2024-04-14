@@ -2,9 +2,9 @@ package app
 
 import (
 	"context"
-	"github.com/gomscourse/chat-server/internal/closer"
 	"github.com/gomscourse/chat-server/internal/config"
 	desc "github.com/gomscourse/chat-server/pkg/chat_v1"
+	"github.com/gomscourse/common/pkg/closer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"

@@ -3,16 +3,16 @@ package app
 import (
 	"context"
 	chatApi "github.com/gomscourse/chat-server/internal/api/chat"
-	"github.com/gomscourse/chat-server/internal/client/db"
-	"github.com/gomscourse/chat-server/internal/client/db/pg"
-	"github.com/gomscourse/chat-server/internal/client/db/transaction"
-	"github.com/gomscourse/chat-server/internal/closer"
 	"github.com/gomscourse/chat-server/internal/config"
 	"github.com/gomscourse/chat-server/internal/config/env"
 	"github.com/gomscourse/chat-server/internal/repository"
 	chatRepo "github.com/gomscourse/chat-server/internal/repository/chat"
 	"github.com/gomscourse/chat-server/internal/service"
 	chatService "github.com/gomscourse/chat-server/internal/service/chat"
+	"github.com/gomscourse/common/pkg/closer"
+	"github.com/gomscourse/common/pkg/db"
+	"github.com/gomscourse/common/pkg/db/pg"
+	"github.com/gomscourse/common/pkg/db/transaction"
 	"log"
 )
 

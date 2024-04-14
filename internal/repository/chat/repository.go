@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gomscourse/chat-server/internal/client/db"
 	serviceModel "github.com/gomscourse/chat-server/internal/model"
 	"github.com/gomscourse/chat-server/internal/repository"
 	"github.com/gomscourse/chat-server/internal/repository/chat/converter"
 	repoModel "github.com/gomscourse/chat-server/internal/repository/chat/model"
+	"github.com/gomscourse/common/pkg/db"
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 )
@@ -128,7 +128,14 @@ func (r repo) CreateMessage(ctx context.Context, chatID int64, sender string, te
 func (r repo) GetChatMessages(ctx context.Context, chatID, page, pageSize int64) ([]*serviceModel.ChatMessage, error) {
 	limit := uint64(pageSize)
 	offset := uint64((page - 1) * pageSize)
-	builderSelect := sq.Select(idColumn, messageChatIDColumn, messageAuthorColumn, messageContentColumn, createdAtColumn, updatedAtColumn).
+	builderSelect := sq.Select(
+		idColumn,
+		messageChatIDColumn,
+		messageAuthorColumn,
+		messageContentColumn,
+		createdAtColumn,
+		updatedAtColumn,
+	).
 		From(messageTableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: chatID}).
