@@ -38,6 +38,7 @@ func TestSendMessage(t *testing.T) {
 			From:      from,
 			Text:      text,
 			Timestamp: timestamppb.New(timestamp),
+			ChatID:    chatID,
 		}
 
 		res = &emptypb.Empty{}
