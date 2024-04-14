@@ -8,7 +8,7 @@ import (
 
 func (i *Implementation) SendMessage(ctx context.Context, req *desc.SendMessageRequest) (*emptypb.Empty, error) {
 	// TODO: add chatID param
-	err := i.chatService.SendMessage(ctx, req.GetFrom(), req.GetText(), 1)
+	err := i.chatService.SendMessage(ctx, req.GetFrom(), req.GetText(), req.GetChatID())
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
