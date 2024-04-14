@@ -7,7 +7,10 @@ import (
 	desc "github.com/gomscourse/chat-server/pkg/chat_v1"
 )
 
-func (i *Implementation) GetChatMessages(ctx context.Context, req *desc.GetChatMessagesRequest) (*desc.GetChatMessagesResponse, error) {
+func (i *Implementation) GetChatMessages(
+	ctx context.Context,
+	req *desc.GetChatMessagesRequest,
+) (*desc.GetChatMessagesResponse, error) {
 	var messages []*serviceModel.ChatMessage
 	var count uint64
 	errChan := make(chan error, 2)
@@ -33,7 +36,7 @@ func (i *Implementation) GetChatMessages(ctx context.Context, req *desc.GetChatM
 	}
 
 	if len(errSlice) > 0 {
-		return &desc.GetChatMessagesResponse{}, errSlice[0]
+		return nil, errSlice[0]
 	}
 
 	return &desc.GetChatMessagesResponse{
