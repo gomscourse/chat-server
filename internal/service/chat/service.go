@@ -14,3 +14,18 @@ type chatService struct {
 func NewChatService(repo repository.ChatRepository, manager db.TxManager) service.ChatService {
 	return &chatService{repo: repo, txManager: manager}
 }
+
+func NewTestService(deps ...interface{}) service.ChatService {
+	srv := chatService{}
+
+	for _, v := range deps {
+		switch s := v.(type) {
+		case repository.ChatRepository:
+			srv.repo = s
+		case db.TxManager:
+			srv.txManager = s
+		}
+	}
+
+	return &srv
+}

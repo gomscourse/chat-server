@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/gojuno/minimock/v3 v3.3.6
-	github.com/gomscourse/common v0.0.0-20240414065049-716aa07fc9b4
+	github.com/gomscourse/common v0.0.0-20240417054442-2f5e81487a79
 	github.com/jackc/pgx/v4 v4.18.2
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1

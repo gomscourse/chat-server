@@ -31,6 +31,10 @@ github.com/golang/protobuf v1.5.4 h1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek
 github.com/golang/protobuf v1.5.4/go.mod h1:lnTiLA8Wa4RWRcIUkrtSVa5nRhsEGBg48fD6rSs7xps=
 github.com/gomscourse/common v0.0.0-20240414065049-716aa07fc9b4 h1:42wALLwxfTR5wyeugBnrEtNe6g1Nwsrj5R+7ZJd365Q=
 github.com/gomscourse/common v0.0.0-20240414065049-716aa07fc9b4/go.mod h1:Dmc+l9h8xmtWIpBESB7Vd4Ik2U/b1qVfXC2xKGHOSIA=
+github.com/gomscourse/common v0.0.0-20240414071029-750e3307e9cf h1:YxKh0+9rDHZfyskB5i+nPt/4HlKHrQNW/P9hVFVWUNc=
+github.com/gomscourse/common v0.0.0-20240414071029-750e3307e9cf/go.mod h1:Dmc+l9h8xmtWIpBESB7Vd4Ik2U/b1qVfXC2xKGHOSIA=
+github.com/gomscourse/common v0.0.0-20240417054442-2f5e81487a79 h1:nHFUrUPRJFm69RPMXQuEzj+b4P4NBCM6HfGQb7p7ehI=
+github.com/gomscourse/common v0.0.0-20240417054442-2f5e81487a79/go.mod h1:6CbNttPzod3kvYBhPp91hmrDlw++HqFBmZ+VdQuuFkc=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
