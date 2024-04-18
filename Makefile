@@ -30,3 +30,19 @@ generate-chat-api:
 	--go-grpc_out=pkg/chat_v1 --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
 	api/chat_v1/chat.proto
+
+test:
+	go clean -testcache
+	go test github.com/gomscourse/chat-server/internal/service/... \
+			   github.com/gomscourse/chat-server/internal/api/... -covermode count -count 5
+
+
+test-coverage:
+	go clean -testcache
+	go test github.com/gomscourse/chat-server/internal/service/... \
+								 github.com/gomscourse/chat-server/internal/api/... -covermode count -coverprofile=coverage.tmp.out -count 5
+	grep -v 'mocks\|config' coverage.tmp.out  > coverage.out
+	rm coverage.tmp.out
+	go tool cover -html=coverage.out;
+	go tool cover -func=./coverage.out | grep "total";
+	grep -sqFx "/coverage.out" .gitignore || echo "/coverage.out" >> .gitignore
