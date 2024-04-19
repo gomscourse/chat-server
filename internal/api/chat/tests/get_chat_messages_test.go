@@ -145,16 +145,7 @@ func TestGetChatMessages(t *testing.T) {
 
 				result, err := api.GetChatMessages(tt.args.ctx, tt.args.req)
 				require.Equal(t, tt.err, err)
-				if result != nil && len(result.Messages) > 0 {
-					require.Equal(t, tt.want.Messages[0].ID, result.Messages[0].ID)
-					require.Equal(t, tt.want.Messages[0].ChatID, result.Messages[0].ChatID)
-					require.Equal(t, tt.want.Messages[0].Author, result.Messages[0].Author)
-					require.Equal(t, tt.want.Messages[0].Content, result.Messages[0].Content)
-					require.Equal(t, tt.want.Messages[0].Updated, result.Messages[0].Updated)
-					require.Equal(t, tt.want.Messages[0].Created, result.Messages[0].Created)
-				} else {
-					require.Equal(t, tt.want, result)
-				}
+				require.Equal(t, tt.want, result)
 			},
 		)
 	}
