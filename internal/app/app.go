@@ -72,7 +72,7 @@ func (a *App) initServiceProvider(_ context.Context) error {
 func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(interceptor.AccessInterceptor),
+		grpc.UnaryInterceptor(interceptor.GetAccessInterceptor(a.serviceProvider.AccessClient())),
 	)
 	reflection.Register(a.grpcServer)
 	desc.RegisterChatV1Server(a.grpcServer, a.serviceProvider.ChatImpl(ctx))

@@ -15,6 +15,7 @@ func Load() error {
 
 type GRPCConfig interface {
 	Address() string
+	AccessClientAddress() string
 }
 
 type PGConfig interface {

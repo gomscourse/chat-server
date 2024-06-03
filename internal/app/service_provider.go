@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	descAccess "github.com/gomscourse/auth/pkg/access_v1"
 	chatApi "github.com/gomscourse/chat-server/internal/api/chat"
 	"github.com/gomscourse/chat-server/internal/config"
 	"github.com/gomscourse/chat-server/internal/config/env"
@@ -13,6 +14,8 @@ import (
 	"github.com/gomscourse/common/pkg/db"
 	"github.com/gomscourse/common/pkg/db/pg"
 	"github.com/gomscourse/common/pkg/db/transaction"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 )
 
@@ -25,6 +28,7 @@ type serviceProvider struct {
 	chatRepository repository.ChatRepository
 	chatService    service.ChatService
 	chatImpl       *chatApi.Implementation
+	accessClient   descAccess.AccessV1Client
 }
 
 func newServiceProvider() *serviceProvider {
@@ -106,4 +110,21 @@ func (sp *serviceProvider) ChatImpl(ctx context.Context) *chatApi.Implementation
 	}
 
 	return sp.chatImpl
+}
+
+func (sp *serviceProvider) AccessClient() descAccess.AccessV1Client {
+	if sp.accessClient == nil {
+		conn, err := grpc.Dial(
+			sp.GRPCConfig().AccessClientAddress(),
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		)
+
+		if err != nil {
+			log.Fatalf("failed to initialize access client: %s", err.Error())
+		}
+
+		sp.accessClient = descAccess.NewAccessV1Client(conn)
+	}
+
+	return sp.accessClient
 }

@@ -14,8 +14,10 @@ const (
 )
 
 type grpcConfig struct {
-	host string
-	port string
+	host             string
+	port             string
+	accessClientHost string
+	accessClientPort string
 }
 
 func NewGRPCConfig() (config.GRPCConfig, error) {
@@ -30,11 +32,17 @@ func NewGRPCConfig() (config.GRPCConfig, error) {
 	}
 
 	return &grpcConfig{
-		host: host,
-		port: port,
+		host:             host,
+		port:             port,
+		accessClientHost: "0.0.0.0", //TODO добавить инициализацию из .env
+		accessClientPort: "50051",   //TODO добавить инициализацию из .env
 	}, nil
 }
 
 func (cfg *grpcConfig) Address() string {
 	return net.JoinHostPort(cfg.host, cfg.port)
+}
+
+func (cfg *grpcConfig) AccessClientAddress() string {
+	return net.JoinHostPort(cfg.accessClientHost, cfg.accessClientPort)
 }
