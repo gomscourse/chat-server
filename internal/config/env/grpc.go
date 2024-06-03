@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	grpcHostEnvName = "GRPC_HOST"
-	grpcPortEnvName = "GRPC_PORT"
+	grpcHostEnvName             = "GRPC_HOST"
+	grpcPortEnvName             = "GRPC_PORT"
+	grpcAccessClientHostEnvName = "GRPC_HOST_ACCESS_CLIENT"
+	grpcAccessClientPortEnvName = "GRPC_PORT_ACCESS_CLIENT"
 )
 
 type grpcConfig struct {
@@ -31,11 +33,21 @@ func NewGRPCConfig() (config.GRPCConfig, error) {
 		return nil, errors.New("grpc port not found")
 	}
 
+	accessClientHost := os.Getenv(grpcAccessClientHostEnvName)
+	if len(host) == 0 {
+		return nil, errors.New("access client grpc host not found")
+	}
+
+	accessClientPort := os.Getenv(grpcAccessClientPortEnvName)
+	if len(port) == 0 {
+		return nil, errors.New("access client grpc port not found")
+	}
+
 	return &grpcConfig{
 		host:             host,
 		port:             port,
-		accessClientHost: "0.0.0.0", //TODO добавить инициализацию из .env
-		accessClientPort: "50051",   //TODO добавить инициализацию из .env
+		accessClientHost: accessClientHost,
+		accessClientPort: accessClientPort,
 	}, nil
 }
 
