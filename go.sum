@@ -29,10 +29,8 @@ github.com/gojuno/minimock/v3 v3.3.6 h1:tZQQaDgKSxsKiVia9vt6zZ/qsKNGBw2D0ubHQPr+
 github.com/gojuno/minimock/v3 v3.3.6/go.mod h1:kjvubEBVT8aUQ9e+g8x/hPfAhiOoqW7WinzzJgzr4ws=
 github.com/golang/protobuf v1.5.4 h1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=
 github.com/golang/protobuf v1.5.4/go.mod h1:lnTiLA8Wa4RWRcIUkrtSVa5nRhsEGBg48fD6rSs7xps=
-github.com/gomscourse/common v0.0.0-20240414065049-716aa07fc9b4 h1:42wALLwxfTR5wyeugBnrEtNe6g1Nwsrj5R+7ZJd365Q=
-github.com/gomscourse/common v0.0.0-20240414065049-716aa07fc9b4/go.mod h1:Dmc+l9h8xmtWIpBESB7Vd4Ik2U/b1qVfXC2xKGHOSIA=
-github.com/gomscourse/common v0.0.0-20240414071029-750e3307e9cf h1:YxKh0+9rDHZfyskB5i+nPt/4HlKHrQNW/P9hVFVWUNc=
-github.com/gomscourse/common v0.0.0-20240414071029-750e3307e9cf/go.mod h1:Dmc+l9h8xmtWIpBESB7Vd4Ik2U/b1qVfXC2xKGHOSIA=
+github.com/gomscourse/auth v0.0.0-20240602152748-1c080e7c0143 h1:iZXWY9IQMkzQi4y9ZZx3lqXFN3hMP7nEvAsITqrX7hw=
+github.com/gomscourse/auth v0.0.0-20240602152748-1c080e7c0143/go.mod h1:XWooJDO9Iv9v9kQOCwSd02Ixtm4fW/Lg/wKzjxQp0ZY=
 github.com/gomscourse/common v0.0.0-20240417054442-2f5e81487a79 h1:nHFUrUPRJFm69RPMXQuEzj+b4P4NBCM6HfGQb7p7ehI=
 github.com/gomscourse/common v0.0.0-20240417054442-2f5e81487a79/go.mod h1:6CbNttPzod3kvYBhPp91hmrDlw++HqFBmZ+VdQuuFkc=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
