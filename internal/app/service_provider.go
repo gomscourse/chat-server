@@ -15,7 +15,7 @@ import (
 	"github.com/gomscourse/common/pkg/db/pg"
 	"github.com/gomscourse/common/pkg/db/transaction"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"log"
 )
 
@@ -114,9 +114,14 @@ func (sp *serviceProvider) ChatImpl(ctx context.Context) *chatApi.Implementation
 
 func (sp *serviceProvider) AccessClient() descAccess.AccessV1Client {
 	if sp.accessClient == nil {
+		creds, err := credentials.NewClientTLSFromFile("service.pem", "")
+		if err != nil {
+			log.Fatalf("could not process the credentials: %v", err)
+		}
+
 		conn, err := grpc.Dial(
 			sp.GRPCConfig().AccessClientAddress(),
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithTransportCredentials(creds),
 		)
 
 		if err != nil {

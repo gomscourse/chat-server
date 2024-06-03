@@ -8,6 +8,8 @@ env:
   REGISTRY: ${{ vars.REGISTRY }}
   IMAGE_NAME: "chat-service"
   ENV_FILE: ${{ secrets.ENV_FILE }}
+  CERTIFICATE: ${{ secrets.CERTIFICATE }}
+  KEY_FILE: ${{ secrets.KEY_FILE }}
 
 jobs:
   image-build-and-push:
@@ -51,7 +53,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,ENV_FILE
+          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,ENV_FILE, CERTIFICATE, KEY_FILE
           script: |
             # Set up variables
             TAG_NAME=$(echo $GITHUB_SHA | head -c7)
@@ -62,6 +64,12 @@ jobs:
             # create .env
             echo "TAG_NAME=$TAG_NAME" > .env
             echo "$ENV_FILE" >> .env
+            
+            # create service.pem
+            echo "$CERTIFICATE" > service.pem
+            
+            # create service.key
+            echo "$KEY_FILE" > service.key
             
             # Login into registry
             docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
