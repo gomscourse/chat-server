@@ -20,18 +20,12 @@ func GetAccessInterceptor(client descAccess.AccessV1Client) func(
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		mdIn, ok := metadata.FromIncomingContext(ctx)
+		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			return nil, errors.New("metadata is not provided")
 		}
 
-		authHeader, ok := mdIn["authorization"]
-		if !ok || len(authHeader) == 0 {
-			return nil, errors.New("authorization header is not provided")
-		}
-
-		mdOut := metadata.New(map[string]string{"Authorization": authHeader[0]})
-		ctx = metadata.NewOutgoingContext(ctx, mdOut)
+		ctx = metadata.NewOutgoingContext(ctx, md)
 
 		_, err := client.Check(
 			ctx, &descAccess.CheckRequest{
