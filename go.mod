@@ -8,6 +8,7 @@ require (
 	github.com/gojuno/minimock/v3 v3.3.6
 	github.com/gomscourse/auth v0.0.0-20240602152748-1c080e7c0143
 	github.com/gomscourse/common v0.0.0-20240417054442-2f5e81487a79
+	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/jackc/pgx/v4 v4.18.2
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
@@ -30,6 +31,7 @@ require (
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
+	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
