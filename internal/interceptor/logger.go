@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"context"
+	"fmt"
 	"github.com/gomscourse/chat-server/internal/logger"
 	"time"
 
@@ -18,7 +19,7 @@ func LogInterceptor(
 
 	res, err := handler(ctx, req)
 	if err != nil {
-		logger.Error(err.Error(), "method", info.FullMethod, "req", req)
+		logger.Error(fmt.Sprintf("request error: %s", err.Error()), "method", info.FullMethod, "req", req)
 	}
 
 	logger.Info("request", "method", info.FullMethod, "req", req, "res", res, "duration", time.Since(now).String())

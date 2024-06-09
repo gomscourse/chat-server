@@ -46,3 +46,26 @@ test-coverage:
 	go tool cover -html=coverage.out;
 	go tool cover -func=./coverage.out | grep "total";
 	grep -sqFx "/coverage.out" .gitignore || echo "/coverage.out" >> .gitignore
+
+JWT ?=
+
+grpc-load-test:
+	ghz \
+		--proto api/chat_v1/chat.proto \
+		--call chat_v1.ChatV1/GetChatMessages \
+		--data '{"id": 1}' \
+		--metadata '{"authorization": "$(JWT)"}' \
+		--rps 100 \
+		--total 3000 \
+		--insecure \
+		localhost:50053
+
+grpc-error-load-test:
+	ghz \
+		--proto api/chat_v1/chat.proto \
+		--call chat_v1.ChatV1/GetChatMessages \
+		--data '{"id": 1}' \
+		--rps 100 \
+		--total 3000 \
+		--insecure \
+		localhost:50053
