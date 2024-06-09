@@ -14,6 +14,8 @@ import (
 	"github.com/gomscourse/common/pkg/db"
 	"github.com/gomscourse/common/pkg/db/pg"
 	"github.com/gomscourse/common/pkg/db/transaction"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"log"
@@ -122,6 +124,9 @@ func (sp *serviceProvider) AccessClient() descAccess.AccessV1Client {
 		conn, err := grpc.Dial(
 			sp.GRPCConfig().AccessClientAddress(),
 			grpc.WithTransportCredentials(creds),
+			grpc.WithUnaryInterceptor(
+				otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer()),
+			),
 		)
 
 		if err != nil {

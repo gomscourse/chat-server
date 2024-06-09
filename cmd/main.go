@@ -11,7 +11,7 @@ func main() {
 
 	a, err := app.NewApp(ctx)
 	if err != nil {
-		log.Fatalf("failed to crate app: %s", err.Error())
+		log.Fatalf("failed to create app: %s", err.Error())
 	}
 
 	err = a.Run()

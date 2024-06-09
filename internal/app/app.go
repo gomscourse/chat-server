@@ -7,6 +7,7 @@ import (
 	"github.com/gomscourse/chat-server/internal/interceptor"
 	"github.com/gomscourse/chat-server/internal/logger"
 	"github.com/gomscourse/chat-server/internal/metric"
+	"github.com/gomscourse/chat-server/internal/tracing"
 	desc "github.com/gomscourse/chat-server/pkg/chat_v1"
 	"github.com/gomscourse/common/pkg/closer"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -78,16 +79,14 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initServiceProvider,
 		a.initGRPCServer,
 		func(ctx context.Context) error {
-			err := metric.Init(ctx)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return metric.Init(ctx)
 		},
 		func(ctx context.Context) error {
 			logger.Init(getLogHandler())
 			return nil
+		},
+		func(ctx context.Context) error {
+			return tracing.Init("chat_server")
 		},
 	}
 
@@ -120,6 +119,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		grpc.Creds(insecure.NewCredentials()),
 		grpc.UnaryInterceptor(
 			grpcMiddleware.ChainUnaryServer(
+				interceptor.ServerTracingInterceptor,
 				interceptor.LogInterceptor,
 				interceptor.MetricsInterceptor,
 				interceptor.GetAccessInterceptor(a.serviceProvider.AccessClient()),

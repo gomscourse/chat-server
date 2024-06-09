@@ -3,6 +3,7 @@ package interceptor
 import (
 	"context"
 	descAccess "github.com/gomscourse/auth/pkg/access_v1"
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -20,6 +21,8 @@ func GetAccessInterceptor(client descAccess.AccessV1Client) func(
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
+		span, ctx := opentracing.StartSpanFromContext(ctx, "check access")
+		defer span.Finish()
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			return nil, errors.New("metadata is not provided")
