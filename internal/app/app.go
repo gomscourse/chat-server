@@ -7,9 +7,9 @@ import (
 	"github.com/gomscourse/chat-server/internal/interceptor"
 	"github.com/gomscourse/chat-server/internal/logger"
 	"github.com/gomscourse/chat-server/internal/metric"
-	"github.com/gomscourse/chat-server/internal/tracing"
 	desc "github.com/gomscourse/chat-server/pkg/chat_v1"
 	"github.com/gomscourse/common/pkg/closer"
+	"github.com/gomscourse/common/pkg/tracing"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/natefinch/lumberjack"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -75,6 +75,9 @@ func (a *App) Run() error {
 
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []initializer{
+		func(ctx context.Context) error {
+			return tracing.Init("chat_service")
+		},
 		a.initConfig,
 		a.initServiceProvider,
 		a.initGRPCServer,
@@ -84,9 +87,6 @@ func (a *App) initDeps(ctx context.Context) error {
 		func(ctx context.Context) error {
 			logger.Init(getLogHandler())
 			return nil
-		},
-		func(ctx context.Context) error {
-			return tracing.Init("chat_server")
 		},
 	}
 
