@@ -4,6 +4,7 @@ import (
 	"github.com/gomscourse/chat-server/internal/config"
 	"net"
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -16,10 +17,12 @@ const (
 )
 
 type grpcConfig struct {
-	host             string
-	port             string
-	accessClientHost string
-	accessClientPort string
+	host              string
+	port              string
+	accessClientHost  string
+	accessClientPort  string
+	requestLimitCount int
+	requestLimitTime  time.Duration
 }
 
 func NewGRPCConfig() (config.GRPCConfig, error) {
@@ -44,10 +47,12 @@ func NewGRPCConfig() (config.GRPCConfig, error) {
 	}
 
 	return &grpcConfig{
-		host:             host,
-		port:             port,
-		accessClientHost: accessClientHost,
-		accessClientPort: accessClientPort,
+		host:              host,
+		port:              port,
+		accessClientHost:  accessClientHost,
+		accessClientPort:  accessClientPort,
+		requestLimitCount: 100,
+		requestLimitTime:  time.Second,
 	}, nil
 }
 
@@ -57,4 +62,8 @@ func (cfg *grpcConfig) Address() string {
 
 func (cfg *grpcConfig) AccessClientAddress() string {
 	return net.JoinHostPort(cfg.accessClientHost, cfg.accessClientPort)
+}
+
+func (cfg *grpcConfig) RateLimit() (int, time.Duration) {
+	return cfg.requestLimitCount, cfg.requestLimitTime
 }

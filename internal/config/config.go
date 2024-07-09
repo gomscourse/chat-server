@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/joho/godotenv"
+	"time"
 )
 
 func Load() error {
@@ -16,6 +17,7 @@ func Load() error {
 type GRPCConfig interface {
 	Address() string
 	AccessClientAddress() string
+	RateLimit() (int, time.Duration)
 }
 
 type PGConfig interface {

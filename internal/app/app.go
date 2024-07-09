@@ -9,6 +9,7 @@ import (
 	"github.com/gomscourse/chat-server/internal/metric"
 	desc "github.com/gomscourse/chat-server/pkg/chat_v1"
 	"github.com/gomscourse/common/pkg/closer"
+	"github.com/gomscourse/common/pkg/rate_limiter"
 	"github.com/gomscourse/common/pkg/tracing"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/natefinch/lumberjack"
@@ -115,6 +116,8 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
+	limit, period := a.serviceProvider.GRPCConfig().RateLimit()
+	rateLimiter := rate_limiter.NewTokenBucketLimiter(ctx, limit, period)
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
 		grpc.UnaryInterceptor(
@@ -123,6 +126,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 				interceptor.LogInterceptor,
 				interceptor.MetricsInterceptor,
 				interceptor.GetAccessInterceptor(a.serviceProvider.AccessClient()),
+				interceptor.NewRateLimiterInterceptor(rateLimiter).Unary,
 			),
 		),
 	)
