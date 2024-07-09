@@ -46,7 +46,7 @@ func (r repo) CreateChat(ctx context.Context) (int64, error) {
 		QueryRow: "INSERT INTO chat DEFAULT VALUES RETURNING id",
 	}
 
-	err := r.db.DB().QueryRowContext(ctx, q).Scan(&chatId)
+	err := r.db.DB().QueryRowContextScan(ctx, &chatId, q)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to insert chat")
 	}
@@ -117,7 +117,7 @@ func (r repo) CreateMessage(ctx context.Context, chatID int64, sender string, te
 
 	var messageId int64
 
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&messageId)
+	err = r.db.DB().QueryRowContextScan(ctx, &messageId, q, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create message")
 	}
@@ -174,7 +174,7 @@ func (r repo) GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, e
 
 	var count uint64
 
-	err := r.db.DB().QueryRowContext(ctx, q, chatID).Scan(&count)
+	err := r.db.DB().QueryRowContextScan(ctx, &count, q, chatID)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count chat messages")
 	}
