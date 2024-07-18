@@ -127,6 +127,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 				interceptor.MetricsInterceptor,
 				interceptor.GetAccessInterceptor(a.serviceProvider.AccessClient()),
 				interceptor.NewRateLimiterInterceptor(rateLimiter).Unary,
+				interceptor.ErrorsInterceptor,
 			),
 		),
 	)

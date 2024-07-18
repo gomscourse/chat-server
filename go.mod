@@ -7,7 +7,7 @@ require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/gojuno/minimock/v3 v3.3.6
 	github.com/gomscourse/auth v0.0.0-20240602152748-1c080e7c0143
-	github.com/gomscourse/common v1.0.3
+	github.com/gomscourse/common v1.0.5
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/jackc/pgx/v4 v4.18.2
