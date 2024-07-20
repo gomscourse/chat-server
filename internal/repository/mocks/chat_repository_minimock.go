@@ -25,8 +25,8 @@ type ChatRepositoryMock struct {
 	beforeAddUsersToChatCounter uint64
 	AddUsersToChatMock          mChatRepositoryMockAddUsersToChat
 
-	funcCreateChat          func(ctx context.Context) (i1 int64, err error)
-	inspectFuncCreateChat   func(ctx context.Context)
+	funcCreateChat          func(ctx context.Context, title string) (i1 int64, err error)
+	inspectFuncCreateChat   func(ctx context.Context, title string)
 	afterCreateChatCounter  uint64
 	beforeCreateChatCounter uint64
 	CreateChatMock          mChatRepositoryMockCreateChat
@@ -323,7 +323,8 @@ type ChatRepositoryMockCreateChatExpectation struct {
 
 // ChatRepositoryMockCreateChatParams contains parameters of the ChatRepository.CreateChat
 type ChatRepositoryMockCreateChatParams struct {
-	ctx context.Context
+	ctx   context.Context
+	title string
 }
 
 // ChatRepositoryMockCreateChatResults contains results of the ChatRepository.CreateChat
@@ -333,7 +334,7 @@ type ChatRepositoryMockCreateChatResults struct {
 }
 
 // Expect sets up expected params for ChatRepository.CreateChat
-func (mmCreateChat *mChatRepositoryMockCreateChat) Expect(ctx context.Context) *mChatRepositoryMockCreateChat {
+func (mmCreateChat *mChatRepositoryMockCreateChat) Expect(ctx context.Context, title string) *mChatRepositoryMockCreateChat {
 	if mmCreateChat.mock.funcCreateChat != nil {
 		mmCreateChat.mock.t.Fatalf("ChatRepositoryMock.CreateChat mock is already set by Set")
 	}
@@ -342,7 +343,7 @@ func (mmCreateChat *mChatRepositoryMockCreateChat) Expect(ctx context.Context) *
 		mmCreateChat.defaultExpectation = &ChatRepositoryMockCreateChatExpectation{}
 	}
 
-	mmCreateChat.defaultExpectation.params = &ChatRepositoryMockCreateChatParams{ctx}
+	mmCreateChat.defaultExpectation.params = &ChatRepositoryMockCreateChatParams{ctx, title}
 	for _, e := range mmCreateChat.expectations {
 		if minimock.Equal(e.params, mmCreateChat.defaultExpectation.params) {
 			mmCreateChat.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreateChat.defaultExpectation.params)
@@ -353,7 +354,7 @@ func (mmCreateChat *mChatRepositoryMockCreateChat) Expect(ctx context.Context) *
 }
 
 // Inspect accepts an inspector function that has same arguments as the ChatRepository.CreateChat
-func (mmCreateChat *mChatRepositoryMockCreateChat) Inspect(f func(ctx context.Context)) *mChatRepositoryMockCreateChat {
+func (mmCreateChat *mChatRepositoryMockCreateChat) Inspect(f func(ctx context.Context, title string)) *mChatRepositoryMockCreateChat {
 	if mmCreateChat.mock.inspectFuncCreateChat != nil {
 		mmCreateChat.mock.t.Fatalf("Inspect function is already set for ChatRepositoryMock.CreateChat")
 	}
@@ -377,7 +378,7 @@ func (mmCreateChat *mChatRepositoryMockCreateChat) Return(i1 int64, err error) *
 }
 
 // Set uses given function f to mock the ChatRepository.CreateChat method
-func (mmCreateChat *mChatRepositoryMockCreateChat) Set(f func(ctx context.Context) (i1 int64, err error)) *ChatRepositoryMock {
+func (mmCreateChat *mChatRepositoryMockCreateChat) Set(f func(ctx context.Context, title string) (i1 int64, err error)) *ChatRepositoryMock {
 	if mmCreateChat.defaultExpectation != nil {
 		mmCreateChat.mock.t.Fatalf("Default expectation is already set for the ChatRepository.CreateChat method")
 	}
@@ -392,14 +393,14 @@ func (mmCreateChat *mChatRepositoryMockCreateChat) Set(f func(ctx context.Contex
 
 // When sets expectation for the ChatRepository.CreateChat which will trigger the result defined by the following
 // Then helper
-func (mmCreateChat *mChatRepositoryMockCreateChat) When(ctx context.Context) *ChatRepositoryMockCreateChatExpectation {
+func (mmCreateChat *mChatRepositoryMockCreateChat) When(ctx context.Context, title string) *ChatRepositoryMockCreateChatExpectation {
 	if mmCreateChat.mock.funcCreateChat != nil {
 		mmCreateChat.mock.t.Fatalf("ChatRepositoryMock.CreateChat mock is already set by Set")
 	}
 
 	expectation := &ChatRepositoryMockCreateChatExpectation{
 		mock:   mmCreateChat.mock,
-		params: &ChatRepositoryMockCreateChatParams{ctx},
+		params: &ChatRepositoryMockCreateChatParams{ctx, title},
 	}
 	mmCreateChat.expectations = append(mmCreateChat.expectations, expectation)
 	return expectation
@@ -412,15 +413,15 @@ func (e *ChatRepositoryMockCreateChatExpectation) Then(i1 int64, err error) *Cha
 }
 
 // CreateChat implements repository.ChatRepository
-func (mmCreateChat *ChatRepositoryMock) CreateChat(ctx context.Context) (i1 int64, err error) {
+func (mmCreateChat *ChatRepositoryMock) CreateChat(ctx context.Context, title string) (i1 int64, err error) {
 	mm_atomic.AddUint64(&mmCreateChat.beforeCreateChatCounter, 1)
 	defer mm_atomic.AddUint64(&mmCreateChat.afterCreateChatCounter, 1)
 
 	if mmCreateChat.inspectFuncCreateChat != nil {
-		mmCreateChat.inspectFuncCreateChat(ctx)
+		mmCreateChat.inspectFuncCreateChat(ctx, title)
 	}
 
-	mm_params := ChatRepositoryMockCreateChatParams{ctx}
+	mm_params := ChatRepositoryMockCreateChatParams{ctx, title}
 
 	// Record call args
 	mmCreateChat.CreateChatMock.mutex.Lock()
@@ -437,7 +438,7 @@ func (mmCreateChat *ChatRepositoryMock) CreateChat(ctx context.Context) (i1 int6
 	if mmCreateChat.CreateChatMock.defaultExpectation != nil {
 		mm_atomic.AddUint64(&mmCreateChat.CreateChatMock.defaultExpectation.Counter, 1)
 		mm_want := mmCreateChat.CreateChatMock.defaultExpectation.params
-		mm_got := ChatRepositoryMockCreateChatParams{ctx}
+		mm_got := ChatRepositoryMockCreateChatParams{ctx, title}
 		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
 			mmCreateChat.t.Errorf("ChatRepositoryMock.CreateChat got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
@@ -449,9 +450,9 @@ func (mmCreateChat *ChatRepositoryMock) CreateChat(ctx context.Context) (i1 int6
 		return (*mm_results).i1, (*mm_results).err
 	}
 	if mmCreateChat.funcCreateChat != nil {
-		return mmCreateChat.funcCreateChat(ctx)
+		return mmCreateChat.funcCreateChat(ctx, title)
 	}
-	mmCreateChat.t.Fatalf("Unexpected call to ChatRepositoryMock.CreateChat. %v", ctx)
+	mmCreateChat.t.Fatalf("Unexpected call to ChatRepositoryMock.CreateChat. %v %v", ctx, title)
 	return
 }
 

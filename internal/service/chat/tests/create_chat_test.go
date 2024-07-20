@@ -20,6 +20,7 @@ func TestCreateChat(t *testing.T) {
 	type args struct {
 		ctx       context.Context
 		usernames []string
+		title     string
 	}
 
 	txManagerMock := commonMocks.NewTxManagerMock(t)
@@ -33,6 +34,7 @@ func TestCreateChat(t *testing.T) {
 		ctx       = context.Background()
 		mc        = minimock.NewController(t)
 		usernames = []string{gofakeit.Name(), gofakeit.Name(), gofakeit.Name()}
+		title     = gofakeit.Name()
 		id        = gofakeit.Int64()
 
 		repoErrorCreate = fmt.Errorf("repo error create")
@@ -53,12 +55,13 @@ func TestCreateChat(t *testing.T) {
 			args: args{
 				ctx:       ctx,
 				usernames: usernames,
+				title:     title,
 			},
 			want: id,
 			err:  nil,
 			chatRepositoryMock: func(mc *minimock.Controller) repository.ChatRepository {
 				mock := repositoryMocks.NewChatRepositoryMock(t)
-				mock.CreateChatMock.Expect(ctx).Return(id, nil)
+				mock.CreateChatMock.Expect(ctx, title).Return(id, nil)
 				mock.AddUsersToChatMock.Expect(ctx, id, usernames).Return(nil)
 				return mock
 			},
@@ -68,12 +71,13 @@ func TestCreateChat(t *testing.T) {
 			args: args{
 				ctx:       ctx,
 				usernames: usernames,
+				title:     title,
 			},
 			want: 0,
 			err:  repoErrorCreate,
 			chatRepositoryMock: func(mc *minimock.Controller) repository.ChatRepository {
 				mock := repositoryMocks.NewChatRepositoryMock(t)
-				mock.CreateChatMock.Expect(ctx).Return(0, repoErrorCreate)
+				mock.CreateChatMock.Expect(ctx, title).Return(0, repoErrorCreate)
 				return mock
 			},
 		},
@@ -82,12 +86,13 @@ func TestCreateChat(t *testing.T) {
 			args: args{
 				ctx:       ctx,
 				usernames: usernames,
+				title:     title,
 			},
 			want: 0,
 			err:  repoErrorAdd,
 			chatRepositoryMock: func(mc *minimock.Controller) repository.ChatRepository {
 				mock := repositoryMocks.NewChatRepositoryMock(t)
-				mock.CreateChatMock.Expect(ctx).Return(id, nil)
+				mock.CreateChatMock.Expect(ctx, title).Return(id, nil)
 				mock.AddUsersToChatMock.Expect(ctx, id, usernames).Return(repoErrorAdd)
 				return mock
 			},
@@ -103,7 +108,7 @@ func TestCreateChat(t *testing.T) {
 				chatRepoMock := tt.chatRepositoryMock(mc)
 				service := chatService.NewChatService(chatRepoMock, txManagerMock)
 
-				result, err := service.CreateChat(tt.args.ctx, tt.args.usernames)
+				result, err := service.CreateChat(tt.args.ctx, tt.args.usernames, tt.args.title)
 				require.Equal(t, tt.err, err)
 				require.Equal(t, tt.want, result)
 			},

@@ -6,7 +6,7 @@ import (
 )
 
 type ChatService interface {
-	CreateChat(ctx context.Context, usernames []string) (int64, error)
+	CreateChat(ctx context.Context, usernames []string, title string) (int64, error)
 	DeleteChat(ctx context.Context, chatID int64) error
 	SendMessage(ctx context.Context, sender, text string, chatID int64) error
 	GetChatMessages(ctx context.Context, chatID, page, pageSize int64) ([]*serviceModel.ChatMessage, error)

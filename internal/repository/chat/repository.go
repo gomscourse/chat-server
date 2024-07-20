@@ -40,15 +40,26 @@ func NewChatRepository(db db.Client) repository.ChatRepository {
 	return &repo{db: db}
 }
 
-func (r repo) CreateChat(ctx context.Context) (int64, error) {
+func (r repo) CreateChat(ctx context.Context, title string) (int64, error) {
 	var chatId int64
+	builderInsertMessage := sq.Insert("chat").
+		PlaceholderFormat(sq.Dollar).
+		Columns("title").
+		Values(title).
+		Suffix("RETURNING id")
+
+	query, args, err := builderInsertMessage.ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to build message query")
+	}
 
 	q := db.Query{
 		Name:     "create_chat_query",
-		QueryRow: "INSERT INTO chat DEFAULT VALUES RETURNING id",
+		QueryRow: query,
 	}
 
-	err := r.db.DB().QueryRowContextScan(ctx, &chatId, q)
+	err = r.db.DB().QueryRowContextScan(ctx, &chatId, q, args...)
+	//TODO: обработать ошибку из-за существующего title
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to insert chat")
 	}
@@ -157,6 +168,8 @@ func (r repo) GetChatMessages(ctx context.Context, chatID, page, pageSize int64)
 	var messages []*repoModel.ChatMessage
 	err = r.db.DB().ScanAllContext(ctx, &messages, q, args...)
 
+	//TODO: добавить аналогичную ошибку в common и подменять на нее при возврате
+	// чтобы не зависеть от пакет pgx
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, sys.NewCommonError(fmt.Sprintf("messages for chat with id %d not found", chatID), codes.NotFound)
 	}

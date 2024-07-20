@@ -19,8 +19,8 @@ type ChatServiceMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
 
-	funcCreateChat          func(ctx context.Context, usernames []string) (i1 int64, err error)
-	inspectFuncCreateChat   func(ctx context.Context, usernames []string)
+	funcCreateChat          func(ctx context.Context, usernames []string, title string) (i1 int64, err error)
+	inspectFuncCreateChat   func(ctx context.Context, usernames []string, title string)
 	afterCreateChatCounter  uint64
 	beforeCreateChatCounter uint64
 	CreateChatMock          mChatServiceMockCreateChat
@@ -99,6 +99,7 @@ type ChatServiceMockCreateChatExpectation struct {
 type ChatServiceMockCreateChatParams struct {
 	ctx       context.Context
 	usernames []string
+	title     string
 }
 
 // ChatServiceMockCreateChatResults contains results of the ChatService.CreateChat
@@ -108,7 +109,7 @@ type ChatServiceMockCreateChatResults struct {
 }
 
 // Expect sets up expected params for ChatService.CreateChat
-func (mmCreateChat *mChatServiceMockCreateChat) Expect(ctx context.Context, usernames []string) *mChatServiceMockCreateChat {
+func (mmCreateChat *mChatServiceMockCreateChat) Expect(ctx context.Context, usernames []string, title string) *mChatServiceMockCreateChat {
 	if mmCreateChat.mock.funcCreateChat != nil {
 		mmCreateChat.mock.t.Fatalf("ChatServiceMock.CreateChat mock is already set by Set")
 	}
@@ -117,7 +118,7 @@ func (mmCreateChat *mChatServiceMockCreateChat) Expect(ctx context.Context, user
 		mmCreateChat.defaultExpectation = &ChatServiceMockCreateChatExpectation{}
 	}
 
-	mmCreateChat.defaultExpectation.params = &ChatServiceMockCreateChatParams{ctx, usernames}
+	mmCreateChat.defaultExpectation.params = &ChatServiceMockCreateChatParams{ctx, usernames, title}
 	for _, e := range mmCreateChat.expectations {
 		if minimock.Equal(e.params, mmCreateChat.defaultExpectation.params) {
 			mmCreateChat.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreateChat.defaultExpectation.params)
@@ -128,7 +129,7 @@ func (mmCreateChat *mChatServiceMockCreateChat) Expect(ctx context.Context, user
 }
 
 // Inspect accepts an inspector function that has same arguments as the ChatService.CreateChat
-func (mmCreateChat *mChatServiceMockCreateChat) Inspect(f func(ctx context.Context, usernames []string)) *mChatServiceMockCreateChat {
+func (mmCreateChat *mChatServiceMockCreateChat) Inspect(f func(ctx context.Context, usernames []string, title string)) *mChatServiceMockCreateChat {
 	if mmCreateChat.mock.inspectFuncCreateChat != nil {
 		mmCreateChat.mock.t.Fatalf("Inspect function is already set for ChatServiceMock.CreateChat")
 	}
@@ -152,7 +153,7 @@ func (mmCreateChat *mChatServiceMockCreateChat) Return(i1 int64, err error) *Cha
 }
 
 // Set uses given function f to mock the ChatService.CreateChat method
-func (mmCreateChat *mChatServiceMockCreateChat) Set(f func(ctx context.Context, usernames []string) (i1 int64, err error)) *ChatServiceMock {
+func (mmCreateChat *mChatServiceMockCreateChat) Set(f func(ctx context.Context, usernames []string, title string) (i1 int64, err error)) *ChatServiceMock {
 	if mmCreateChat.defaultExpectation != nil {
 		mmCreateChat.mock.t.Fatalf("Default expectation is already set for the ChatService.CreateChat method")
 	}
@@ -167,14 +168,14 @@ func (mmCreateChat *mChatServiceMockCreateChat) Set(f func(ctx context.Context, 
 
 // When sets expectation for the ChatService.CreateChat which will trigger the result defined by the following
 // Then helper
-func (mmCreateChat *mChatServiceMockCreateChat) When(ctx context.Context, usernames []string) *ChatServiceMockCreateChatExpectation {
+func (mmCreateChat *mChatServiceMockCreateChat) When(ctx context.Context, usernames []string, title string) *ChatServiceMockCreateChatExpectation {
 	if mmCreateChat.mock.funcCreateChat != nil {
 		mmCreateChat.mock.t.Fatalf("ChatServiceMock.CreateChat mock is already set by Set")
 	}
 
 	expectation := &ChatServiceMockCreateChatExpectation{
 		mock:   mmCreateChat.mock,
-		params: &ChatServiceMockCreateChatParams{ctx, usernames},
+		params: &ChatServiceMockCreateChatParams{ctx, usernames, title},
 	}
 	mmCreateChat.expectations = append(mmCreateChat.expectations, expectation)
 	return expectation
@@ -187,15 +188,15 @@ func (e *ChatServiceMockCreateChatExpectation) Then(i1 int64, err error) *ChatSe
 }
 
 // CreateChat implements service.ChatService
-func (mmCreateChat *ChatServiceMock) CreateChat(ctx context.Context, usernames []string) (i1 int64, err error) {
+func (mmCreateChat *ChatServiceMock) CreateChat(ctx context.Context, usernames []string, title string) (i1 int64, err error) {
 	mm_atomic.AddUint64(&mmCreateChat.beforeCreateChatCounter, 1)
 	defer mm_atomic.AddUint64(&mmCreateChat.afterCreateChatCounter, 1)
 
 	if mmCreateChat.inspectFuncCreateChat != nil {
-		mmCreateChat.inspectFuncCreateChat(ctx, usernames)
+		mmCreateChat.inspectFuncCreateChat(ctx, usernames, title)
 	}
 
-	mm_params := ChatServiceMockCreateChatParams{ctx, usernames}
+	mm_params := ChatServiceMockCreateChatParams{ctx, usernames, title}
 
 	// Record call args
 	mmCreateChat.CreateChatMock.mutex.Lock()
@@ -212,7 +213,7 @@ func (mmCreateChat *ChatServiceMock) CreateChat(ctx context.Context, usernames [
 	if mmCreateChat.CreateChatMock.defaultExpectation != nil {
 		mm_atomic.AddUint64(&mmCreateChat.CreateChatMock.defaultExpectation.Counter, 1)
 		mm_want := mmCreateChat.CreateChatMock.defaultExpectation.params
-		mm_got := ChatServiceMockCreateChatParams{ctx, usernames}
+		mm_got := ChatServiceMockCreateChatParams{ctx, usernames, title}
 		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
 			mmCreateChat.t.Errorf("ChatServiceMock.CreateChat got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
@@ -224,9 +225,9 @@ func (mmCreateChat *ChatServiceMock) CreateChat(ctx context.Context, usernames [
 		return (*mm_results).i1, (*mm_results).err
 	}
 	if mmCreateChat.funcCreateChat != nil {
-		return mmCreateChat.funcCreateChat(ctx, usernames)
+		return mmCreateChat.funcCreateChat(ctx, usernames, title)
 	}
-	mmCreateChat.t.Fatalf("Unexpected call to ChatServiceMock.CreateChat. %v %v", ctx, usernames)
+	mmCreateChat.t.Fatalf("Unexpected call to ChatServiceMock.CreateChat. %v %v %v", ctx, usernames, title)
 	return
 }
 
