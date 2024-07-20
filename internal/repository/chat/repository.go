@@ -9,6 +9,8 @@ import (
 	"github.com/gomscourse/chat-server/internal/repository/chat/converter"
 	repoModel "github.com/gomscourse/chat-server/internal/repository/chat/model"
 	"github.com/gomscourse/common/pkg/db"
+	"github.com/gomscourse/common/pkg/sys"
+	"github.com/gomscourse/common/pkg/sys/codes"
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 )
@@ -156,7 +158,7 @@ func (r repo) GetChatMessages(ctx context.Context, chatID, page, pageSize int64)
 	err = r.db.DB().ScanAllContext(ctx, &messages, q, args...)
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, fmt.Errorf("messages for chat with id %d not found", chatID)
+		return nil, sys.NewCommonError(fmt.Sprintf("messages for chat with id %d not found", chatID), codes.NotFound)
 	}
 
 	if err != nil {
