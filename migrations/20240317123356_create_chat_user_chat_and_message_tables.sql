@@ -2,7 +2,8 @@
 create table chat
 (
     id         bigserial primary key,
-    created_at timestamp not null default now(),
+    title      varchar(255) not null unique,
+    created_at timestamp    not null default now(),
     updated_at timestamp
 );
 
@@ -14,6 +15,9 @@ create table user_chat
     created_at timestamp                   not null default now(),
     updated_at timestamp
 );
+
+create unique index user_chat_chat_id_author_uindex
+    on user_chat (chat_id, username);
 
 create table message
 (
