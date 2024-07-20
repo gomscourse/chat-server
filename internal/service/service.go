@@ -12,3 +12,6 @@ type ChatService interface {
 	GetChatMessages(ctx context.Context, chatID, page, pageSize int64) ([]*serviceModel.ChatMessage, error)
 	GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, error)
 }
+
+type Stream interface {
+}
