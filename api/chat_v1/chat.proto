@@ -56,5 +56,5 @@ message ChatMessage {
 }
 
 message ConnectChatRequest {
-  int64 chat_uuid = 1;
+  int64 chat_id = 1;
 }

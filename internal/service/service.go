@@ -11,7 +11,10 @@ type ChatService interface {
 	SendMessage(ctx context.Context, sender, text string, chatID int64) error
 	GetChatMessages(ctx context.Context, chatID, page, pageSize int64) ([]*serviceModel.ChatMessage, error)
 	GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, error)
+	ConnectChat(stream Stream, chatID int64) error
 }
 
 type Stream interface {
+	Send(message *serviceModel.ChatMessage) error
+	Context() context.Context
 }

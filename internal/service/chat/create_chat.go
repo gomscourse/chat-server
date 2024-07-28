@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"github.com/gomscourse/chat-server/internal/logger"
 	serviceModel "github.com/gomscourse/chat-server/internal/model"
 )
 
@@ -30,9 +31,25 @@ func (s *chatService) CreateChat(ctx context.Context, usernames []string, title 
 		return 0, err
 	}
 
-	s.channels[id] = make(chan *serviceModel.ChatMessage)
+	messagesCh := make(chan *serviceModel.ChatMessage)
+	s.channels[id] = messagesCh
 
-	//TODO: прослушивание сообщений из канала чата и отправка их через стримы
+	go func() {
+		for {
+			select {
+			case msg, okChan := <-messagesCh:
+				if !okChan {
+					return
+				}
+
+				for _, st := range s.chats[id].streams {
+					if err := st.Send(msg); err != nil {
+						logger.Error(err.Error(), "chatID", id)
+					}
+				}
+			}
+		}
+	}()
 
 	return id, nil
 }
