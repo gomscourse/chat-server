@@ -118,6 +118,7 @@ func (a *App) initServiceProvider(_ context.Context) error {
 func (a *App) initGRPCServer(ctx context.Context) error {
 	limit, period := a.serviceProvider.GRPCConfig().RateLimit()
 	rateLimiter := rate_limiter.NewTokenBucketLimiter(ctx, limit, period)
+	accessClient := a.serviceProvider.AccessClient()
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
 		grpc.UnaryInterceptor(
@@ -125,11 +126,12 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 				interceptor.ServerTracingInterceptor,
 				interceptor.LogInterceptor,
 				interceptor.MetricsInterceptor,
-				interceptor.GetAccessInterceptor(a.serviceProvider.AccessClient()),
+				interceptor.GetAccessInterceptor(accessClient),
 				interceptor.NewRateLimiterInterceptor(rateLimiter).Unary,
 				interceptor.ErrorsInterceptor,
 			),
 		),
+		grpc.StreamInterceptor(interceptor.GetAccessStreamInterceptor(accessClient)),
 	)
 	reflection.Register(a.grpcServer)
 	desc.RegisterChatV1Server(a.grpcServer, a.serviceProvider.ChatImpl(ctx))
