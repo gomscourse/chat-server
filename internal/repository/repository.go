@@ -12,4 +12,5 @@ type ChatRepository interface {
 	CreateMessage(ctx context.Context, chatID int64, sender string, text string) (int64, error)
 	GetChatMessages(ctx context.Context, chatID, page, pageSize int64) ([]*serviceModel.ChatMessage, error)
 	GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, error)
+	CheckUserChat(ctx context.Context, chatID int64, username string) (bool, error)
 }

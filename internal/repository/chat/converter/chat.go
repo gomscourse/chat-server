@@ -25,3 +25,12 @@ func ToChatMessagesFromRepo(messages []*repoModel.ChatMessage) []*serviceModel.C
 
 	return result
 }
+
+func ToChatFromRepo(chat *repoModel.Chat) *serviceModel.Chat {
+	return &serviceModel.Chat{
+		ID:        chat.ID,
+		Title:     chat.Title,
+		CreatedAt: chat.CreatedAt,
+		UpdatedAt: chat.UpdatedAt,
+	}
+}

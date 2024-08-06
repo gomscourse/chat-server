@@ -196,3 +196,18 @@ func (r repo) GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, e
 
 	return count, nil
 }
+
+func (r repo) CheckUserChat(ctx context.Context, chatID int64, username string) (bool, error) {
+	q := db.Query{
+		Name:     "check_user_chat",
+		QueryRow: "SELECT count(id) FROM user_chat WHERE chat_id = $1 AND username = $2;",
+	}
+
+	var count int
+	err := r.db.DB().QueryRowContextScan(ctx, &count, q, chatID, username)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to get user_chat")
+	}
+
+	return count > 0, nil
+}

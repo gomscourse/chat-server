@@ -25,6 +25,12 @@ type ChatRepositoryMock struct {
 	beforeAddUsersToChatCounter uint64
 	AddUsersToChatMock          mChatRepositoryMockAddUsersToChat
 
+	funcCheckUserChat          func(ctx context.Context, chatID int64, username string) (b1 bool, err error)
+	inspectFuncCheckUserChat   func(ctx context.Context, chatID int64, username string)
+	afterCheckUserChatCounter  uint64
+	beforeCheckUserChatCounter uint64
+	CheckUserChatMock          mChatRepositoryMockCheckUserChat
+
 	funcCreateChat          func(ctx context.Context, title string) (i1 int64, err error)
 	inspectFuncCreateChat   func(ctx context.Context, title string)
 	afterCreateChatCounter  uint64
@@ -66,6 +72,9 @@ func NewChatRepositoryMock(t minimock.Tester) *ChatRepositoryMock {
 
 	m.AddUsersToChatMock = mChatRepositoryMockAddUsersToChat{mock: m}
 	m.AddUsersToChatMock.callArgs = []*ChatRepositoryMockAddUsersToChatParams{}
+
+	m.CheckUserChatMock = mChatRepositoryMockCheckUserChat{mock: m}
+	m.CheckUserChatMock.callArgs = []*ChatRepositoryMockCheckUserChatParams{}
 
 	m.CreateChatMock = mChatRepositoryMockCreateChat{mock: m}
 	m.CreateChatMock.callArgs = []*ChatRepositoryMockCreateChatParams{}
@@ -301,6 +310,224 @@ func (m *ChatRepositoryMock) MinimockAddUsersToChatInspect() {
 	// if func was set then invocations count should be greater than zero
 	if m.funcAddUsersToChat != nil && mm_atomic.LoadUint64(&m.afterAddUsersToChatCounter) < 1 {
 		m.t.Error("Expected call to ChatRepositoryMock.AddUsersToChat")
+	}
+}
+
+type mChatRepositoryMockCheckUserChat struct {
+	mock               *ChatRepositoryMock
+	defaultExpectation *ChatRepositoryMockCheckUserChatExpectation
+	expectations       []*ChatRepositoryMockCheckUserChatExpectation
+
+	callArgs []*ChatRepositoryMockCheckUserChatParams
+	mutex    sync.RWMutex
+}
+
+// ChatRepositoryMockCheckUserChatExpectation specifies expectation struct of the ChatRepository.CheckUserChat
+type ChatRepositoryMockCheckUserChatExpectation struct {
+	mock    *ChatRepositoryMock
+	params  *ChatRepositoryMockCheckUserChatParams
+	results *ChatRepositoryMockCheckUserChatResults
+	Counter uint64
+}
+
+// ChatRepositoryMockCheckUserChatParams contains parameters of the ChatRepository.CheckUserChat
+type ChatRepositoryMockCheckUserChatParams struct {
+	ctx      context.Context
+	chatID   int64
+	username string
+}
+
+// ChatRepositoryMockCheckUserChatResults contains results of the ChatRepository.CheckUserChat
+type ChatRepositoryMockCheckUserChatResults struct {
+	b1  bool
+	err error
+}
+
+// Expect sets up expected params for ChatRepository.CheckUserChat
+func (mmCheckUserChat *mChatRepositoryMockCheckUserChat) Expect(ctx context.Context, chatID int64, username string) *mChatRepositoryMockCheckUserChat {
+	if mmCheckUserChat.mock.funcCheckUserChat != nil {
+		mmCheckUserChat.mock.t.Fatalf("ChatRepositoryMock.CheckUserChat mock is already set by Set")
+	}
+
+	if mmCheckUserChat.defaultExpectation == nil {
+		mmCheckUserChat.defaultExpectation = &ChatRepositoryMockCheckUserChatExpectation{}
+	}
+
+	mmCheckUserChat.defaultExpectation.params = &ChatRepositoryMockCheckUserChatParams{ctx, chatID, username}
+	for _, e := range mmCheckUserChat.expectations {
+		if minimock.Equal(e.params, mmCheckUserChat.defaultExpectation.params) {
+			mmCheckUserChat.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCheckUserChat.defaultExpectation.params)
+		}
+	}
+
+	return mmCheckUserChat
+}
+
+// Inspect accepts an inspector function that has same arguments as the ChatRepository.CheckUserChat
+func (mmCheckUserChat *mChatRepositoryMockCheckUserChat) Inspect(f func(ctx context.Context, chatID int64, username string)) *mChatRepositoryMockCheckUserChat {
+	if mmCheckUserChat.mock.inspectFuncCheckUserChat != nil {
+		mmCheckUserChat.mock.t.Fatalf("Inspect function is already set for ChatRepositoryMock.CheckUserChat")
+	}
+
+	mmCheckUserChat.mock.inspectFuncCheckUserChat = f
+
+	return mmCheckUserChat
+}
+
+// Return sets up results that will be returned by ChatRepository.CheckUserChat
+func (mmCheckUserChat *mChatRepositoryMockCheckUserChat) Return(b1 bool, err error) *ChatRepositoryMock {
+	if mmCheckUserChat.mock.funcCheckUserChat != nil {
+		mmCheckUserChat.mock.t.Fatalf("ChatRepositoryMock.CheckUserChat mock is already set by Set")
+	}
+
+	if mmCheckUserChat.defaultExpectation == nil {
+		mmCheckUserChat.defaultExpectation = &ChatRepositoryMockCheckUserChatExpectation{mock: mmCheckUserChat.mock}
+	}
+	mmCheckUserChat.defaultExpectation.results = &ChatRepositoryMockCheckUserChatResults{b1, err}
+	return mmCheckUserChat.mock
+}
+
+// Set uses given function f to mock the ChatRepository.CheckUserChat method
+func (mmCheckUserChat *mChatRepositoryMockCheckUserChat) Set(f func(ctx context.Context, chatID int64, username string) (b1 bool, err error)) *ChatRepositoryMock {
+	if mmCheckUserChat.defaultExpectation != nil {
+		mmCheckUserChat.mock.t.Fatalf("Default expectation is already set for the ChatRepository.CheckUserChat method")
+	}
+
+	if len(mmCheckUserChat.expectations) > 0 {
+		mmCheckUserChat.mock.t.Fatalf("Some expectations are already set for the ChatRepository.CheckUserChat method")
+	}
+
+	mmCheckUserChat.mock.funcCheckUserChat = f
+	return mmCheckUserChat.mock
+}
+
+// When sets expectation for the ChatRepository.CheckUserChat which will trigger the result defined by the following
+// Then helper
+func (mmCheckUserChat *mChatRepositoryMockCheckUserChat) When(ctx context.Context, chatID int64, username string) *ChatRepositoryMockCheckUserChatExpectation {
+	if mmCheckUserChat.mock.funcCheckUserChat != nil {
+		mmCheckUserChat.mock.t.Fatalf("ChatRepositoryMock.CheckUserChat mock is already set by Set")
+	}
+
+	expectation := &ChatRepositoryMockCheckUserChatExpectation{
+		mock:   mmCheckUserChat.mock,
+		params: &ChatRepositoryMockCheckUserChatParams{ctx, chatID, username},
+	}
+	mmCheckUserChat.expectations = append(mmCheckUserChat.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ChatRepository.CheckUserChat return parameters for the expectation previously defined by the When method
+func (e *ChatRepositoryMockCheckUserChatExpectation) Then(b1 bool, err error) *ChatRepositoryMock {
+	e.results = &ChatRepositoryMockCheckUserChatResults{b1, err}
+	return e.mock
+}
+
+// CheckUserChat implements repository.ChatRepository
+func (mmCheckUserChat *ChatRepositoryMock) CheckUserChat(ctx context.Context, chatID int64, username string) (b1 bool, err error) {
+	mm_atomic.AddUint64(&mmCheckUserChat.beforeCheckUserChatCounter, 1)
+	defer mm_atomic.AddUint64(&mmCheckUserChat.afterCheckUserChatCounter, 1)
+
+	if mmCheckUserChat.inspectFuncCheckUserChat != nil {
+		mmCheckUserChat.inspectFuncCheckUserChat(ctx, chatID, username)
+	}
+
+	mm_params := ChatRepositoryMockCheckUserChatParams{ctx, chatID, username}
+
+	// Record call args
+	mmCheckUserChat.CheckUserChatMock.mutex.Lock()
+	mmCheckUserChat.CheckUserChatMock.callArgs = append(mmCheckUserChat.CheckUserChatMock.callArgs, &mm_params)
+	mmCheckUserChat.CheckUserChatMock.mutex.Unlock()
+
+	for _, e := range mmCheckUserChat.CheckUserChatMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.b1, e.results.err
+		}
+	}
+
+	if mmCheckUserChat.CheckUserChatMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmCheckUserChat.CheckUserChatMock.defaultExpectation.Counter, 1)
+		mm_want := mmCheckUserChat.CheckUserChatMock.defaultExpectation.params
+		mm_got := ChatRepositoryMockCheckUserChatParams{ctx, chatID, username}
+		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmCheckUserChat.t.Errorf("ChatRepositoryMock.CheckUserChat got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmCheckUserChat.CheckUserChatMock.defaultExpectation.results
+		if mm_results == nil {
+			mmCheckUserChat.t.Fatal("No results are set for the ChatRepositoryMock.CheckUserChat")
+		}
+		return (*mm_results).b1, (*mm_results).err
+	}
+	if mmCheckUserChat.funcCheckUserChat != nil {
+		return mmCheckUserChat.funcCheckUserChat(ctx, chatID, username)
+	}
+	mmCheckUserChat.t.Fatalf("Unexpected call to ChatRepositoryMock.CheckUserChat. %v %v %v", ctx, chatID, username)
+	return
+}
+
+// CheckUserChatAfterCounter returns a count of finished ChatRepositoryMock.CheckUserChat invocations
+func (mmCheckUserChat *ChatRepositoryMock) CheckUserChatAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCheckUserChat.afterCheckUserChatCounter)
+}
+
+// CheckUserChatBeforeCounter returns a count of ChatRepositoryMock.CheckUserChat invocations
+func (mmCheckUserChat *ChatRepositoryMock) CheckUserChatBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCheckUserChat.beforeCheckUserChatCounter)
+}
+
+// Calls returns a list of arguments used in each call to ChatRepositoryMock.CheckUserChat.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmCheckUserChat *mChatRepositoryMockCheckUserChat) Calls() []*ChatRepositoryMockCheckUserChatParams {
+	mmCheckUserChat.mutex.RLock()
+
+	argCopy := make([]*ChatRepositoryMockCheckUserChatParams, len(mmCheckUserChat.callArgs))
+	copy(argCopy, mmCheckUserChat.callArgs)
+
+	mmCheckUserChat.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockCheckUserChatDone returns true if the count of the CheckUserChat invocations corresponds
+// the number of defined expectations
+func (m *ChatRepositoryMock) MinimockCheckUserChatDone() bool {
+	for _, e := range m.CheckUserChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.CheckUserChatMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterCheckUserChatCounter) < 1 {
+		return false
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcCheckUserChat != nil && mm_atomic.LoadUint64(&m.afterCheckUserChatCounter) < 1 {
+		return false
+	}
+	return true
+}
+
+// MinimockCheckUserChatInspect logs each unmet expectation
+func (m *ChatRepositoryMock) MinimockCheckUserChatInspect() {
+	for _, e := range m.CheckUserChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ChatRepositoryMock.CheckUserChat with params: %#v", *e.params)
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.CheckUserChatMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterCheckUserChatCounter) < 1 {
+		if m.CheckUserChatMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to ChatRepositoryMock.CheckUserChat")
+		} else {
+			m.t.Errorf("Expected call to ChatRepositoryMock.CheckUserChat with params: %#v", *m.CheckUserChatMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcCheckUserChat != nil && mm_atomic.LoadUint64(&m.afterCheckUserChatCounter) < 1 {
+		m.t.Error("Expected call to ChatRepositoryMock.CheckUserChat")
 	}
 }
 
@@ -1398,6 +1625,8 @@ func (m *ChatRepositoryMock) MinimockFinish() {
 		if !m.minimockDone() {
 			m.MinimockAddUsersToChatInspect()
 
+			m.MinimockCheckUserChatInspect()
+
 			m.MinimockCreateChatInspect()
 
 			m.MinimockCreateMessageInspect()
@@ -1432,6 +1661,7 @@ func (m *ChatRepositoryMock) minimockDone() bool {
 	done := true
 	return done &&
 		m.MinimockAddUsersToChatDone() &&
+		m.MinimockCheckUserChatDone() &&
 		m.MinimockCreateChatDone() &&
 		m.MinimockCreateMessageDone() &&
 		m.MinimockDeleteChatDone() &&

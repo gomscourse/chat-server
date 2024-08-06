@@ -13,3 +13,10 @@ type ChatMessage struct {
 	CreatedAt time.Time    `db:"created_at"`
 	UpdatedAt sql.NullTime `db:"updated_at"`
 }
+
+type Chat struct {
+	ID        int64        `db:"id"`
+	Title     string       `db:"title"`
+	CreatedAt time.Time    `db:"created_at"`
+	UpdatedAt sql.NullTime `db:"updated_at"`
+}
