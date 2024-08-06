@@ -37,7 +37,11 @@ func GetAccessInterceptor(client descAccess.AccessV1Client) func(
 		span, ctx := opentracing.StartSpanFromContext(ctx, "check access")
 		defer span.Finish()
 		err := checkAccess(ctx, client, info.FullMethod)
+		if err != nil {
+			return nil, err
+		}
 
+		ctx, err = putUsernameFromJWTToContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -63,32 +67,11 @@ func GetAccessStreamInterceptor(client descAccess.AccessV1Client) func(
 			return err
 		}
 
-		md, ok := metadata.FromIncomingContext(ss.Context())
-		if !ok {
-			return errors.New("metadata is not provided")
-		}
-
-		authHeader, ok := md["authorization"]
-		if !ok || len(authHeader) == 0 {
-			return errors.New("authorization header is not provided")
-		}
-
-		if !strings.HasPrefix(authHeader[0], authPrefix) {
-			return errors.New("invalid authorization header format")
-		}
-
-		accessToken := strings.TrimPrefix(authHeader[0], authPrefix)
-		token, _, err := new(jwt.Parser).ParseUnverified(accessToken, &UserClaims{})
+		ctx, err := putUsernameFromJWTToContext(ss.Context())
 		if err != nil {
-			return sys.NewCommonError("failed to parse token claims", codes.InvalidArgument)
+			return err
 		}
 
-		claims, ok := token.Claims.(*UserClaims)
-		if !ok {
-			return sys.NewCommonError("invalid user claims", codes.InvalidArgument)
-		}
-
-		ctx := context.WithValue(ss.Context(), context_keys.UsernameKey, claims.Username)
 		wrapped := &wrappedStream{
 			ctx:          ctx,
 			serverStream: ss,
@@ -113,6 +96,35 @@ func checkAccess(ctx context.Context, client descAccess.AccessV1Client, method s
 	)
 
 	return err
+}
+
+func putUsernameFromJWTToContext(ctx context.Context) (context.Context, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("metadata is not provided")
+	}
+
+	authHeader, ok := md["authorization"]
+	if !ok || len(authHeader) == 0 {
+		return nil, errors.New("authorization header is not provided")
+	}
+
+	if !strings.HasPrefix(authHeader[0], authPrefix) {
+		return nil, errors.New("invalid authorization header format")
+	}
+
+	accessToken := strings.TrimPrefix(authHeader[0], authPrefix)
+	token, _, err := new(jwt.Parser).ParseUnverified(accessToken, &UserClaims{})
+	if err != nil {
+		return nil, sys.NewCommonError("failed to parse token claims", codes.InvalidArgument)
+	}
+
+	claims, ok := token.Claims.(*UserClaims)
+	if !ok {
+		return nil, sys.NewCommonError("invalid user claims", codes.InvalidArgument)
+	}
+
+	return context.WithValue(ctx, context_keys.UsernameKey, claims.Username), nil
 }
 
 type wrappedStream struct {
