@@ -3,6 +3,7 @@ package chat
 import (
 	"fmt"
 	"github.com/gomscourse/chat-server/internal/context_keys"
+	"github.com/gomscourse/chat-server/internal/logger"
 	serviceModel "github.com/gomscourse/chat-server/internal/model"
 	"github.com/gomscourse/chat-server/internal/service"
 	"github.com/gomscourse/common/pkg/sys"
@@ -39,9 +40,34 @@ func (s *chatService) ConnectChat(stream service.Stream, chatID int64) error {
 
 	s.mxChat.RLock()
 	if _, okChat := s.chats[chatID]; !okChat {
-
+		s.chats[chatID] = &Chat{streams: make(map[string]service.Stream)}
 	}
 	s.mxChat.RUnlock()
 
-	return nil
+	s.chats[chatID].m.Lock()
+	s.chats[chatID].streams[username] = stream
+	s.chats[chatID].m.Unlock()
+
+	for {
+		select {
+		case msg, okChan := <-chatChan:
+			if !okChan {
+				return nil
+			}
+
+			for u, st := range s.chats[chatID].streams {
+				if msg.Author != username {
+					if err := st.Send(msg); err != nil {
+						logger.Error(err.Error(), "chatID", chatID, "username", u)
+					}
+				}
+			}
+
+		case <-ctx.Done():
+			s.chats[chatID].m.Lock()
+			delete(s.chats[chatID].streams, username)
+			s.chats[chatID].m.Unlock()
+			return nil
+		}
+	}
 }
