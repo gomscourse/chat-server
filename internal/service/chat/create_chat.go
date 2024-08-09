@@ -2,8 +2,6 @@ package chat
 
 import (
 	"context"
-	"github.com/gomscourse/chat-server/internal/logger"
-	serviceModel "github.com/gomscourse/chat-server/internal/model"
 )
 
 func (s *chatService) CreateChat(ctx context.Context, usernames []string, title string) (int64, error) {
@@ -30,26 +28,6 @@ func (s *chatService) CreateChat(ctx context.Context, usernames []string, title 
 	if err != nil {
 		return 0, err
 	}
-
-	messagesCh := make(chan *serviceModel.ChatMessage)
-	s.channels[id] = messagesCh
-
-	go func() {
-		for {
-			select {
-			case msg, okChan := <-messagesCh:
-				if !okChan {
-					return
-				}
-
-				for _, st := range s.chats[id].streams {
-					if err := st.Send(msg); err != nil {
-						logger.Error(err.Error(), "chatID", id)
-					}
-				}
-			}
-		}
-	}()
 
 	return id, nil
 }
