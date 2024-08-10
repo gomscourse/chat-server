@@ -2,7 +2,7 @@ package chat
 
 import (
 	"fmt"
-	"github.com/gomscourse/chat-server/internal/context_keys"
+	"github.com/gomscourse/chat-server/internal/helpers"
 	"github.com/gomscourse/chat-server/internal/logger"
 	serviceModel "github.com/gomscourse/chat-server/internal/model"
 	"github.com/gomscourse/chat-server/internal/service"
@@ -12,9 +12,9 @@ import (
 
 func (s *chatService) ConnectChat(stream service.Stream, chatID int64) error {
 	ctx := stream.Context()
-	username, ok := ctx.Value(context_keys.UsernameKey).(string)
-	if !ok || len(username) == 0 {
-		return sys.NewCommonError("invalid username in context", codes.Internal)
+	username, err := helpers.GetCtxUser(ctx)
+	if err != nil {
+		return err
 	}
 
 	// проверить есть ли чат в базе и состоит ли пользователь в чате

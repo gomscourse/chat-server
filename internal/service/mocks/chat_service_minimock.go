@@ -50,8 +50,8 @@ type ChatServiceMock struct {
 	beforeGetChatMessagesCountCounter uint64
 	GetChatMessagesCountMock          mChatServiceMockGetChatMessagesCount
 
-	funcSendMessage          func(ctx context.Context, sender string, text string, chatID int64) (err error)
-	inspectFuncSendMessage   func(ctx context.Context, sender string, text string, chatID int64)
+	funcSendMessage          func(ctx context.Context, text string, chatID int64) (err error)
+	inspectFuncSendMessage   func(ctx context.Context, text string, chatID int64)
 	afterSendMessageCounter  uint64
 	beforeSendMessageCounter uint64
 	SendMessageMock          mChatServiceMockSendMessage
@@ -1194,7 +1194,6 @@ type ChatServiceMockSendMessageExpectation struct {
 // ChatServiceMockSendMessageParams contains parameters of the ChatService.SendMessage
 type ChatServiceMockSendMessageParams struct {
 	ctx    context.Context
-	sender string
 	text   string
 	chatID int64
 }
@@ -1205,7 +1204,7 @@ type ChatServiceMockSendMessageResults struct {
 }
 
 // Expect sets up expected params for ChatService.SendMessage
-func (mmSendMessage *mChatServiceMockSendMessage) Expect(ctx context.Context, sender string, text string, chatID int64) *mChatServiceMockSendMessage {
+func (mmSendMessage *mChatServiceMockSendMessage) Expect(ctx context.Context, text string, chatID int64) *mChatServiceMockSendMessage {
 	if mmSendMessage.mock.funcSendMessage != nil {
 		mmSendMessage.mock.t.Fatalf("ChatServiceMock.SendMessage mock is already set by Set")
 	}
@@ -1214,7 +1213,7 @@ func (mmSendMessage *mChatServiceMockSendMessage) Expect(ctx context.Context, se
 		mmSendMessage.defaultExpectation = &ChatServiceMockSendMessageExpectation{}
 	}
 
-	mmSendMessage.defaultExpectation.params = &ChatServiceMockSendMessageParams{ctx, sender, text, chatID}
+	mmSendMessage.defaultExpectation.params = &ChatServiceMockSendMessageParams{ctx, text, chatID}
 	for _, e := range mmSendMessage.expectations {
 		if minimock.Equal(e.params, mmSendMessage.defaultExpectation.params) {
 			mmSendMessage.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmSendMessage.defaultExpectation.params)
@@ -1225,7 +1224,7 @@ func (mmSendMessage *mChatServiceMockSendMessage) Expect(ctx context.Context, se
 }
 
 // Inspect accepts an inspector function that has same arguments as the ChatService.SendMessage
-func (mmSendMessage *mChatServiceMockSendMessage) Inspect(f func(ctx context.Context, sender string, text string, chatID int64)) *mChatServiceMockSendMessage {
+func (mmSendMessage *mChatServiceMockSendMessage) Inspect(f func(ctx context.Context, text string, chatID int64)) *mChatServiceMockSendMessage {
 	if mmSendMessage.mock.inspectFuncSendMessage != nil {
 		mmSendMessage.mock.t.Fatalf("Inspect function is already set for ChatServiceMock.SendMessage")
 	}
@@ -1249,7 +1248,7 @@ func (mmSendMessage *mChatServiceMockSendMessage) Return(err error) *ChatService
 }
 
 // Set uses given function f to mock the ChatService.SendMessage method
-func (mmSendMessage *mChatServiceMockSendMessage) Set(f func(ctx context.Context, sender string, text string, chatID int64) (err error)) *ChatServiceMock {
+func (mmSendMessage *mChatServiceMockSendMessage) Set(f func(ctx context.Context, text string, chatID int64) (err error)) *ChatServiceMock {
 	if mmSendMessage.defaultExpectation != nil {
 		mmSendMessage.mock.t.Fatalf("Default expectation is already set for the ChatService.SendMessage method")
 	}
@@ -1264,14 +1263,14 @@ func (mmSendMessage *mChatServiceMockSendMessage) Set(f func(ctx context.Context
 
 // When sets expectation for the ChatService.SendMessage which will trigger the result defined by the following
 // Then helper
-func (mmSendMessage *mChatServiceMockSendMessage) When(ctx context.Context, sender string, text string, chatID int64) *ChatServiceMockSendMessageExpectation {
+func (mmSendMessage *mChatServiceMockSendMessage) When(ctx context.Context, text string, chatID int64) *ChatServiceMockSendMessageExpectation {
 	if mmSendMessage.mock.funcSendMessage != nil {
 		mmSendMessage.mock.t.Fatalf("ChatServiceMock.SendMessage mock is already set by Set")
 	}
 
 	expectation := &ChatServiceMockSendMessageExpectation{
 		mock:   mmSendMessage.mock,
-		params: &ChatServiceMockSendMessageParams{ctx, sender, text, chatID},
+		params: &ChatServiceMockSendMessageParams{ctx, text, chatID},
 	}
 	mmSendMessage.expectations = append(mmSendMessage.expectations, expectation)
 	return expectation
@@ -1284,15 +1283,15 @@ func (e *ChatServiceMockSendMessageExpectation) Then(err error) *ChatServiceMock
 }
 
 // SendMessage implements service.ChatService
-func (mmSendMessage *ChatServiceMock) SendMessage(ctx context.Context, sender string, text string, chatID int64) (err error) {
+func (mmSendMessage *ChatServiceMock) SendMessage(ctx context.Context, text string, chatID int64) (err error) {
 	mm_atomic.AddUint64(&mmSendMessage.beforeSendMessageCounter, 1)
 	defer mm_atomic.AddUint64(&mmSendMessage.afterSendMessageCounter, 1)
 
 	if mmSendMessage.inspectFuncSendMessage != nil {
-		mmSendMessage.inspectFuncSendMessage(ctx, sender, text, chatID)
+		mmSendMessage.inspectFuncSendMessage(ctx, text, chatID)
 	}
 
-	mm_params := ChatServiceMockSendMessageParams{ctx, sender, text, chatID}
+	mm_params := ChatServiceMockSendMessageParams{ctx, text, chatID}
 
 	// Record call args
 	mmSendMessage.SendMessageMock.mutex.Lock()
@@ -1309,7 +1308,7 @@ func (mmSendMessage *ChatServiceMock) SendMessage(ctx context.Context, sender st
 	if mmSendMessage.SendMessageMock.defaultExpectation != nil {
 		mm_atomic.AddUint64(&mmSendMessage.SendMessageMock.defaultExpectation.Counter, 1)
 		mm_want := mmSendMessage.SendMessageMock.defaultExpectation.params
-		mm_got := ChatServiceMockSendMessageParams{ctx, sender, text, chatID}
+		mm_got := ChatServiceMockSendMessageParams{ctx, text, chatID}
 		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
 			mmSendMessage.t.Errorf("ChatServiceMock.SendMessage got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
@@ -1321,9 +1320,9 @@ func (mmSendMessage *ChatServiceMock) SendMessage(ctx context.Context, sender st
 		return (*mm_results).err
 	}
 	if mmSendMessage.funcSendMessage != nil {
-		return mmSendMessage.funcSendMessage(ctx, sender, text, chatID)
+		return mmSendMessage.funcSendMessage(ctx, text, chatID)
 	}
-	mmSendMessage.t.Fatalf("Unexpected call to ChatServiceMock.SendMessage. %v %v %v %v", ctx, sender, text, chatID)
+	mmSendMessage.t.Fatalf("Unexpected call to ChatServiceMock.SendMessage. %v %v %v", ctx, text, chatID)
 	return
 }
 
