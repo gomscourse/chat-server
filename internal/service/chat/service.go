@@ -25,7 +25,12 @@ type chatService struct {
 }
 
 func NewChatService(repo repository.ChatRepository, manager db.TxManager) service.ChatService {
-	return &chatService{repo: repo, txManager: manager}
+	return &chatService{
+		repo:      repo,
+		txManager: manager,
+		channels:  make(map[int64]chan *model.ChatMessage),
+		chats:     make(map[int64]*Chat),
+	}
 }
 
 func NewTestService(deps ...interface{}) service.ChatService {

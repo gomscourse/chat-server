@@ -62,6 +62,9 @@ func GetAccessStreamInterceptor(client descAccess.AccessV1Client) func(
 		info *grpc.StreamServerInfo,
 		handler grpc.StreamHandler,
 	) error {
+		if info.FullMethod == "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo" {
+			return handler(srv, ss)
+		}
 		err := checkAccess(ss.Context(), client, info.FullMethod)
 		if err != nil {
 			return err
