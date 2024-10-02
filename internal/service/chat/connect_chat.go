@@ -33,8 +33,9 @@ func (s *chatService) ConnectChat(stream service.Stream, chatID int64) error {
 	s.mxChannel.RUnlock()
 
 	if !ok {
+		chatChan = make(chan *serviceModel.ChatMessage, 100)
 		s.mxChannel.Lock()
-		s.channels[chatID] = make(chan *serviceModel.ChatMessage)
+		s.channels[chatID] = chatChan
 		s.mxChannel.Unlock()
 	}
 
@@ -56,10 +57,8 @@ func (s *chatService) ConnectChat(stream service.Stream, chatID int64) error {
 			}
 
 			for u, st := range s.chats[chatID].streams {
-				if msg.Author != username {
-					if err := st.Send(msg); err != nil {
-						logger.Error(err.Error(), "chatID", chatID, "username", u)
-					}
+				if err := st.Send(msg); err != nil {
+					logger.Error(err.Error(), "chatID", chatID, "username", u)
 				}
 			}
 

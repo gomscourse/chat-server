@@ -24,7 +24,7 @@ func (s *chatService) SendMessage(ctx context.Context, text string, chatID int64
 
 	if !ok {
 		s.mxChannel.Lock()
-		chatChan = make(chan *serviceModel.ChatMessage)
+		chatChan = make(chan *serviceModel.ChatMessage, 100)
 		s.channels[chatID] = chatChan
 		s.mxChannel.Unlock()
 	}
