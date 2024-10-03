@@ -11,6 +11,7 @@ import (
 	"github.com/gomscourse/common/pkg/db"
 	"github.com/gomscourse/common/pkg/sys"
 	"github.com/gomscourse/common/pkg/sys/codes"
+	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 )
@@ -111,16 +112,19 @@ func (r repo) AddUsersToChat(ctx context.Context, chatID int64, usernames []stri
 	return nil
 }
 
-func (r repo) CreateMessage(ctx context.Context, chatID int64, sender string, text string) (int64, error) {
+func (r repo) CreateMessage(ctx context.Context, chatID int64, sender string, text string) (
+	*serviceModel.ChatMessage,
+	error,
+) {
 	builderInsertMessage := sq.Insert("message").
 		PlaceholderFormat(sq.Dollar).
 		Columns("chat_id", "author", "content").
 		Values(chatID, sender, text).
-		Suffix("RETURNING id")
+		Suffix("RETURNING id, created_at")
 
 	query, args, err := builderInsertMessage.ToSql()
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to build message query")
+		return nil, errors.Wrap(err, "failed to build message query")
 	}
 
 	q := db.Query{
@@ -129,13 +133,20 @@ func (r repo) CreateMessage(ctx context.Context, chatID int64, sender string, te
 	}
 
 	var messageId int64
+	var created pgtype.Timestamp
 
-	err = r.db.DB().QueryRowContextScan(ctx, &messageId, q, args...)
+	err = r.db.DB().QueryRowContextScanMany(ctx, []any{&messageId, &created}, q, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to create message")
+		return nil, errors.Wrap(err, "failed to create message")
 	}
 
-	return messageId, nil
+	return &serviceModel.ChatMessage{
+		ID:        messageId,
+		ChatID:    chatID,
+		Author:    sender,
+		Content:   text,
+		CreatedAt: created.Time,
+	}, nil
 }
 
 func (r repo) GetChatMessages(ctx context.Context, chatID, page, pageSize int64) ([]*serviceModel.ChatMessage, error) {

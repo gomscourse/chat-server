@@ -3,7 +3,6 @@ package chat
 import (
 	"context"
 	"github.com/gomscourse/chat-server/internal/helpers"
-	serviceModel "github.com/gomscourse/chat-server/internal/model"
 )
 
 func (s *chatService) SendMessage(ctx context.Context, text string, chatID int64) error {
@@ -12,8 +11,7 @@ func (s *chatService) SendMessage(ctx context.Context, text string, chatID int64
 		return err
 	}
 
-	//TODO: переделать на возврат модели сообщения
-	id, err := s.repo.CreateMessage(ctx, chatID, sender, text)
+	msg, err := s.repo.CreateMessage(ctx, chatID, sender, text)
 	if err != nil {
 		return err
 	}
@@ -21,12 +19,7 @@ func (s *chatService) SendMessage(ctx context.Context, text string, chatID int64
 	chatChan := s.initMessagesChan(chatID)
 
 	go func() {
-		chatChan <- &serviceModel.ChatMessage{
-			ID:      id,
-			ChatID:  chatID,
-			Author:  sender,
-			Content: text,
-		}
+		chatChan <- msg
 	}()
 
 	return nil

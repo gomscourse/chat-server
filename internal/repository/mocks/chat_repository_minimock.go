@@ -37,7 +37,7 @@ type ChatRepositoryMock struct {
 	beforeCreateChatCounter uint64
 	CreateChatMock          mChatRepositoryMockCreateChat
 
-	funcCreateMessage          func(ctx context.Context, chatID int64, sender string, text string) (i1 int64, err error)
+	funcCreateMessage          func(ctx context.Context, chatID int64, sender string, text string) (cp1 *serviceModel.ChatMessage, err error)
 	inspectFuncCreateMessage   func(ctx context.Context, chatID int64, sender string, text string)
 	afterCreateMessageCounter  uint64
 	beforeCreateMessageCounter uint64
@@ -775,7 +775,7 @@ type ChatRepositoryMockCreateMessageParams struct {
 
 // ChatRepositoryMockCreateMessageResults contains results of the ChatRepository.CreateMessage
 type ChatRepositoryMockCreateMessageResults struct {
-	i1  int64
+	cp1 *serviceModel.ChatMessage
 	err error
 }
 
@@ -811,7 +811,7 @@ func (mmCreateMessage *mChatRepositoryMockCreateMessage) Inspect(f func(ctx cont
 }
 
 // Return sets up results that will be returned by ChatRepository.CreateMessage
-func (mmCreateMessage *mChatRepositoryMockCreateMessage) Return(i1 int64, err error) *ChatRepositoryMock {
+func (mmCreateMessage *mChatRepositoryMockCreateMessage) Return(cp1 *serviceModel.ChatMessage, err error) *ChatRepositoryMock {
 	if mmCreateMessage.mock.funcCreateMessage != nil {
 		mmCreateMessage.mock.t.Fatalf("ChatRepositoryMock.CreateMessage mock is already set by Set")
 	}
@@ -819,12 +819,12 @@ func (mmCreateMessage *mChatRepositoryMockCreateMessage) Return(i1 int64, err er
 	if mmCreateMessage.defaultExpectation == nil {
 		mmCreateMessage.defaultExpectation = &ChatRepositoryMockCreateMessageExpectation{mock: mmCreateMessage.mock}
 	}
-	mmCreateMessage.defaultExpectation.results = &ChatRepositoryMockCreateMessageResults{i1, err}
+	mmCreateMessage.defaultExpectation.results = &ChatRepositoryMockCreateMessageResults{cp1, err}
 	return mmCreateMessage.mock
 }
 
 // Set uses given function f to mock the ChatRepository.CreateMessage method
-func (mmCreateMessage *mChatRepositoryMockCreateMessage) Set(f func(ctx context.Context, chatID int64, sender string, text string) (i1 int64, err error)) *ChatRepositoryMock {
+func (mmCreateMessage *mChatRepositoryMockCreateMessage) Set(f func(ctx context.Context, chatID int64, sender string, text string) (cp1 *serviceModel.ChatMessage, err error)) *ChatRepositoryMock {
 	if mmCreateMessage.defaultExpectation != nil {
 		mmCreateMessage.mock.t.Fatalf("Default expectation is already set for the ChatRepository.CreateMessage method")
 	}
@@ -853,13 +853,13 @@ func (mmCreateMessage *mChatRepositoryMockCreateMessage) When(ctx context.Contex
 }
 
 // Then sets up ChatRepository.CreateMessage return parameters for the expectation previously defined by the When method
-func (e *ChatRepositoryMockCreateMessageExpectation) Then(i1 int64, err error) *ChatRepositoryMock {
-	e.results = &ChatRepositoryMockCreateMessageResults{i1, err}
+func (e *ChatRepositoryMockCreateMessageExpectation) Then(cp1 *serviceModel.ChatMessage, err error) *ChatRepositoryMock {
+	e.results = &ChatRepositoryMockCreateMessageResults{cp1, err}
 	return e.mock
 }
 
 // CreateMessage implements repository.ChatRepository
-func (mmCreateMessage *ChatRepositoryMock) CreateMessage(ctx context.Context, chatID int64, sender string, text string) (i1 int64, err error) {
+func (mmCreateMessage *ChatRepositoryMock) CreateMessage(ctx context.Context, chatID int64, sender string, text string) (cp1 *serviceModel.ChatMessage, err error) {
 	mm_atomic.AddUint64(&mmCreateMessage.beforeCreateMessageCounter, 1)
 	defer mm_atomic.AddUint64(&mmCreateMessage.afterCreateMessageCounter, 1)
 
@@ -877,7 +877,7 @@ func (mmCreateMessage *ChatRepositoryMock) CreateMessage(ctx context.Context, ch
 	for _, e := range mmCreateMessage.CreateMessageMock.expectations {
 		if minimock.Equal(*e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.i1, e.results.err
+			return e.results.cp1, e.results.err
 		}
 	}
 
@@ -893,7 +893,7 @@ func (mmCreateMessage *ChatRepositoryMock) CreateMessage(ctx context.Context, ch
 		if mm_results == nil {
 			mmCreateMessage.t.Fatal("No results are set for the ChatRepositoryMock.CreateMessage")
 		}
-		return (*mm_results).i1, (*mm_results).err
+		return (*mm_results).cp1, (*mm_results).err
 	}
 	if mmCreateMessage.funcCreateMessage != nil {
 		return mmCreateMessage.funcCreateMessage(ctx, chatID, sender, text)
