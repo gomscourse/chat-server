@@ -29,5 +29,7 @@ func (s *chatService) CreateChat(ctx context.Context, usernames []string, title 
 		return 0, err
 	}
 
+	s.initMessagesChan(id)
+
 	return id, nil
 }
