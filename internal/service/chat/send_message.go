@@ -18,16 +18,7 @@ func (s *chatService) SendMessage(ctx context.Context, text string, chatID int64
 		return err
 	}
 
-	s.mxChannel.RLock()
-	chatChan, ok := s.channels[chatID]
-	s.mxChannel.RUnlock()
-
-	if !ok {
-		s.mxChannel.Lock()
-		chatChan = make(chan *serviceModel.ChatMessage, 100)
-		s.channels[chatID] = chatChan
-		s.mxChannel.Unlock()
-	}
+	chatChan := s.initMessagesChan(chatID)
 
 	go func() {
 		chatChan <- &serviceModel.ChatMessage{

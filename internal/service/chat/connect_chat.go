@@ -1,10 +1,8 @@
 package chat
 
 import (
-	"fmt"
 	"github.com/gomscourse/chat-server/internal/helpers"
 	"github.com/gomscourse/chat-server/internal/logger"
-	serviceModel "github.com/gomscourse/chat-server/internal/model"
 	"github.com/gomscourse/chat-server/internal/service"
 	"github.com/gomscourse/common/pkg/sys"
 	"github.com/gomscourse/common/pkg/sys/codes"
@@ -27,17 +25,7 @@ func (s *chatService) ConnectChat(stream service.Stream, chatID int64) error {
 		return sys.NewCommonError("chat not found or user is not member of chat", codes.InvalidArgument)
 	}
 
-	s.mxChannel.RLock()
-	chatChan, ok := s.channels[chatID]
-	fmt.Println(chatChan)
-	s.mxChannel.RUnlock()
-
-	if !ok {
-		chatChan = make(chan *serviceModel.ChatMessage, 100)
-		s.mxChannel.Lock()
-		s.channels[chatID] = chatChan
-		s.mxChannel.Unlock()
-	}
+	chatChan := s.initMessagesChan(chatID)
 
 	s.mxChat.RLock()
 	if _, okChat := s.chats[chatID]; !okChat {
