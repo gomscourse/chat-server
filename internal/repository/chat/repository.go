@@ -19,7 +19,8 @@ import (
 const messageTableName = "message"
 
 const (
-	idColumn = "id"
+	idColumn     = "id"
+	chatIdColumn = "chat_id"
 )
 
 const (
@@ -162,7 +163,8 @@ func (r repo) GetChatMessages(ctx context.Context, chatID, page, pageSize int64)
 	).
 		From(messageTableName).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: chatID}).
+		Where(sq.Eq{chatIdColumn: chatID}).
+		OrderBy("id DESC").
 		Limit(limit).
 		Offset(offset)
 
