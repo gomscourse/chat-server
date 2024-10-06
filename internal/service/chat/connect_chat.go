@@ -4,8 +4,6 @@ import (
 	"github.com/gomscourse/chat-server/internal/helpers"
 	"github.com/gomscourse/chat-server/internal/logger"
 	"github.com/gomscourse/chat-server/internal/service"
-	"github.com/gomscourse/common/pkg/sys"
-	"github.com/gomscourse/common/pkg/sys/codes"
 )
 
 func (s *chatService) ConnectChat(stream service.Stream, chatID int64) error {
@@ -15,14 +13,9 @@ func (s *chatService) ConnectChat(stream service.Stream, chatID int64) error {
 		return err
 	}
 
-	// проверить есть ли чат в базе и состоит ли пользователь в чате
-	exists, err := s.repo.CheckUserChat(stream.Context(), chatID, username)
+	err = s.checkChatAvailability(ctx, chatID, username)
 	if err != nil {
 		return err
-	}
-	// если чата нет, либо пользователь не в чате - вернуть ошибку
-	if !exists {
-		return sys.NewCommonError("chat not found or user is not member of chat", codes.InvalidArgument)
 	}
 
 	chatChan := s.initMessagesChan(chatID)
