@@ -27,6 +27,7 @@ type ChatV1Client interface {
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetChatMessages(ctx context.Context, in *GetChatMessagesRequest, opts ...grpc.CallOption) (*GetChatMessagesResponse, error)
+	GetAvailableChats(ctx context.Context, in *GetAvailableChatsRequest, opts ...grpc.CallOption) (*GetAvailableChatsResponse, error)
 	ConnectChat(ctx context.Context, in *ConnectChatRequest, opts ...grpc.CallOption) (ChatV1_ConnectChatClient, error)
 }
 
@@ -74,6 +75,15 @@ func (c *chatV1Client) GetChatMessages(ctx context.Context, in *GetChatMessagesR
 	return out, nil
 }
 
+func (c *chatV1Client) GetAvailableChats(ctx context.Context, in *GetAvailableChatsRequest, opts ...grpc.CallOption) (*GetAvailableChatsResponse, error) {
+	out := new(GetAvailableChatsResponse)
+	err := c.cc.Invoke(ctx, "/chat_v1.ChatV1/GetAvailableChats", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *chatV1Client) ConnectChat(ctx context.Context, in *ConnectChatRequest, opts ...grpc.CallOption) (ChatV1_ConnectChatClient, error) {
 	stream, err := c.cc.NewStream(ctx, &ChatV1_ServiceDesc.Streams[0], "/chat_v1.ChatV1/ConnectChat", opts...)
 	if err != nil {
@@ -114,6 +124,7 @@ type ChatV1Server interface {
 	Delete(context.Context, *DeleteRequest) (*emptypb.Empty, error)
 	SendMessage(context.Context, *SendMessageRequest) (*emptypb.Empty, error)
 	GetChatMessages(context.Context, *GetChatMessagesRequest) (*GetChatMessagesResponse, error)
+	GetAvailableChats(context.Context, *GetAvailableChatsRequest) (*GetAvailableChatsResponse, error)
 	ConnectChat(*ConnectChatRequest, ChatV1_ConnectChatServer) error
 	mustEmbedUnimplementedChatV1Server()
 }
@@ -133,6 +144,9 @@ func (UnimplementedChatV1Server) SendMessage(context.Context, *SendMessageReques
 }
 func (UnimplementedChatV1Server) GetChatMessages(context.Context, *GetChatMessagesRequest) (*GetChatMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChatMessages not implemented")
+}
+func (UnimplementedChatV1Server) GetAvailableChats(context.Context, *GetAvailableChatsRequest) (*GetAvailableChatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAvailableChats not implemented")
 }
 func (UnimplementedChatV1Server) ConnectChat(*ConnectChatRequest, ChatV1_ConnectChatServer) error {
 	return status.Errorf(codes.Unimplemented, "method ConnectChat not implemented")
@@ -222,6 +236,24 @@ func _ChatV1_GetChatMessages_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChatV1_GetAvailableChats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAvailableChatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatV1Server).GetAvailableChats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chat_v1.ChatV1/GetAvailableChats",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatV1Server).GetAvailableChats(ctx, req.(*GetAvailableChatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ChatV1_ConnectChat_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ConnectChatRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -265,6 +297,10 @@ var ChatV1_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetChatMessages",
 			Handler:    _ChatV1_GetChatMessages_Handler,
+		},
+		{
+			MethodName: "GetAvailableChats",
+			Handler:    _ChatV1_GetAvailableChats_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
