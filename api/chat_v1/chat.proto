@@ -12,7 +12,7 @@ service ChatV1 {
   rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
   rpc SendMessage(SendMessageRequest) returns (google.protobuf.Empty);
   rpc GetChatMessages(GetChatMessagesRequest) returns (GetChatMessagesResponse);
-  rpc GetAvailableChats(google.protobuf.Empty) returns (GetAvailableChatsResponse);
+  rpc GetAvailableChats(GetAvailableChatsRequest) returns (GetAvailableChatsResponse);
   rpc ConnectChat(ConnectChatRequest) returns (stream ChatMessage);
 }
 
@@ -44,6 +44,11 @@ message GetChatMessagesRequest {
 message GetChatMessagesResponse {
   repeated ChatMessage messages = 1;
   uint64 count = 2;
+}
+
+message GetAvailableChatsRequest {
+  int64 page = 1;
+  int64 pageSize = 2;
 }
 
 message GetAvailableChatsResponse {
