@@ -75,6 +75,7 @@ func (r repo) CreateChat(ctx context.Context, title string) (int64, error) {
 }
 
 func (r repo) DeleteChat(ctx context.Context, id int64) error {
+	//FIXME: также удалить записи в user_chat и сообщения (либо помечать чат как удаленный)
 	deleteBuilder := sq.Delete("chat").PlaceholderFormat(sq.Dollar).Where(sq.Eq{"id": id})
 	query, args, err := deleteBuilder.ToSql()
 
@@ -233,7 +234,13 @@ func (r repo) CheckUserChat(ctx context.Context, chatID int64, username string) 
 func (r repo) GetChats(ctx context.Context, username string, page, pageSize int64) ([]*serviceModel.Chat, error) {
 	limit := uint64(pageSize)
 	offset := uint64((page - 1) * pageSize)
-	builderSelect := prepareUserChatsQuery(username, idColumn, chatTitleColumn, createdAtColumn, updatedAtColumn)
+	builderSelect := prepareUserChatsQuery(
+		username,
+		fmt.Sprintf("%s.%s", chatTableName, idColumn),
+		chatTitleColumn,
+		fmt.Sprintf("%s.%s", chatTableName, createdAtColumn),
+		fmt.Sprintf("%s.%s", chatTableName, updatedAtColumn),
+	)
 	builderSelect = handleLimitAndOffset(builderSelect, limit, offset)
 
 	query, args, err := builderSelect.ToSql()
@@ -263,7 +270,7 @@ func (r repo) GetChats(ctx context.Context, username string, page, pageSize int6
 }
 
 func (r repo) GetChatsCount(ctx context.Context, username string) (uint64, error) {
-	builderSelect := prepareUserChatsQuery(username, fmt.Sprintf("COUNT(%s)", idColumn))
+	builderSelect := prepareUserChatsQuery(username, fmt.Sprintf("COUNT(%s.%s)", chatTableName, idColumn))
 
 	query, args, err := builderSelect.ToSql()
 	if err != nil {
