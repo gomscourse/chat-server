@@ -63,6 +63,8 @@ github.com/gomscourse/common v1.0.6 h1:/K9iL3NxzPGt2vzffgE9SgslwzuzhSg0maeCD/mjJ
 github.com/gomscourse/common v1.0.6/go.mod h1:RnBewwbU4CPQFCfsgXscpCkErs7vRSKC6QrtugNaY3c=
 github.com/gomscourse/common v1.0.7 h1:XS1VL48DjQ0rh5g6j2W81L/ygIjFcwKEhYxlgcDrEgY=
 github.com/gomscourse/common v1.0.7/go.mod h1:RnBewwbU4CPQFCfsgXscpCkErs7vRSKC6QrtugNaY3c=
+github.com/gomscourse/common v1.0.8 h1:Y/G/jNP/RiFM0gZ4/A/v1yzimzC8OHusUGt/u64B95Q=
+github.com/gomscourse/common v1.0.8/go.mod h1:RnBewwbU4CPQFCfsgXscpCkErs7vRSKC6QrtugNaY3c=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
