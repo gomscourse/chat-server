@@ -6,6 +6,30 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func ToChatFromService(chat *serviceModel.Chat) *desc.Chat {
+	var updatedAt *timestamppb.Timestamp
+	if chat.UpdatedAt.Valid {
+		updatedAt = timestamppb.New(chat.UpdatedAt.Time)
+	}
+
+	return &desc.Chat{
+		ID:      chat.ID,
+		Title:   chat.Title,
+		Created: timestamppb.New(chat.CreatedAt),
+		Updated: updatedAt,
+	}
+}
+
+func ToChatsFromService(chats []*serviceModel.Chat) []*desc.Chat {
+	result := make([]*desc.Chat, 0, len(chats))
+
+	for _, m := range chats {
+		result = append(result, ToChatFromService(m))
+	}
+
+	return result
+}
+
 func ToChatMessageFromService(message *serviceModel.ChatMessage) *desc.ChatMessage {
 	var updatedAt *timestamppb.Timestamp
 	if message.UpdatedAt.Valid {

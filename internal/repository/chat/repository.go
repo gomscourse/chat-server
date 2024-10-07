@@ -16,11 +16,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-const messageTableName = "message"
+const (
+	messageTableName  = "message"
+	chatTableName     = "chat"
+	userChatTableName = "user_chat"
+	usernameColumn    = "username"
+)
 
 const (
-	idColumn     = "id"
-	chatIdColumn = "chat_id"
+	idColumn        = "id"
+	createdAtColumn = "created_at"
+	updatedAtColumn = "updated_at"
 )
 
 const (
@@ -30,8 +36,7 @@ const (
 )
 
 const (
-	createdAtColumn = "created_at"
-	updatedAtColumn = "updated_at"
+	chatTitleColumn = "title"
 )
 
 type repo struct {
@@ -163,10 +168,10 @@ func (r repo) GetChatMessages(ctx context.Context, chatID, page, pageSize int64)
 	).
 		From(messageTableName).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{chatIdColumn: chatID}).
-		OrderBy("id DESC").
-		Limit(limit).
-		Offset(offset)
+		Where(sq.Eq{messageChatIDColumn: chatID}).
+		OrderBy("id DESC")
+
+	builderSelect = handleLimitAndOffset(builderSelect, limit, offset)
 
 	query, args, err := builderSelect.ToSql()
 	if err != nil {
@@ -223,4 +228,79 @@ func (r repo) CheckUserChat(ctx context.Context, chatID int64, username string) 
 	}
 
 	return count > 0, nil
+}
+
+func (r repo) GetChats(ctx context.Context, username string, page, pageSize int64) ([]*serviceModel.Chat, error) {
+	limit := uint64(pageSize)
+	offset := uint64((page - 1) * pageSize)
+	builderSelect := prepareUserChatsQuery(username, idColumn, chatTitleColumn, createdAtColumn, updatedAtColumn)
+	builderSelect = handleLimitAndOffset(builderSelect, limit, offset)
+
+	query, args, err := builderSelect.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+
+	q := db.Query{
+		Name:     "get_chats_query",
+		QueryRow: query,
+	}
+
+	var chats []*repoModel.Chat
+	err = r.db.DB().ScanAllContext(ctx, &chats, q, args...)
+
+	//TODO: добавить аналогичную ошибку в common и подменять на нее при возврате
+	// чтобы не зависеть от пакет pgx
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, sys.NewCommonError(fmt.Sprintf("chats for chat user %s not found", username), codes.NotFound)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get chats: %w", err)
+	}
+
+	return converter.ToChatsFromRepo(chats), nil
+}
+
+func (r repo) GetChatsCount(ctx context.Context, username string) (uint64, error) {
+	builderSelect := prepareUserChatsQuery(username, fmt.Sprintf("COUNT(%s)", idColumn))
+
+	query, args, err := builderSelect.ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("failed to build query: %w", err)
+	}
+
+	q := db.Query{
+		Name:     "chats_count",
+		QueryRow: query,
+	}
+
+	var count uint64
+
+	err = r.db.DB().QueryRowContextScan(ctx, &count, q, args...)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count chat messages")
+	}
+
+	return count, nil
+}
+
+func prepareUserChatsQuery(username string, columns ...string) sq.SelectBuilder {
+	return sq.Select(columns...).
+		From(chatTableName).
+		PlaceholderFormat(sq.Dollar).
+		InnerJoin(fmt.Sprintf("%s ON %s.chat_id = %s.id", userChatTableName, userChatTableName, chatTableName)).
+		Where(sq.Eq{fmt.Sprintf("%s.%s", userChatTableName, usernameColumn): username})
+}
+
+func handleLimitAndOffset(builderSelect sq.SelectBuilder, limit, offset uint64) sq.SelectBuilder {
+	if limit != 0 {
+		builderSelect = builderSelect.Limit(limit)
+	}
+
+	if offset != 0 {
+		builderSelect = builderSelect.Offset(offset)
+	}
+
+	return builderSelect
 }

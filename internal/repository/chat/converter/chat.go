@@ -34,3 +34,13 @@ func ToChatFromRepo(chat *repoModel.Chat) *serviceModel.Chat {
 		UpdatedAt: chat.UpdatedAt,
 	}
 }
+
+func ToChatsFromRepo(chats []*repoModel.Chat) []*serviceModel.Chat {
+	result := make([]*serviceModel.Chat, 0, len(chats))
+
+	for _, c := range chats {
+		result = append(result, ToChatFromRepo(c))
+	}
+
+	return result
+}
