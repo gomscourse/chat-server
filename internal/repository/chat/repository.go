@@ -68,7 +68,7 @@ func (r repo) CreateChat(ctx context.Context, title string) (int64, error) {
 	err = r.db.DB().QueryRowContextScan(ctx, &chatId, q, args...)
 	//TODO: обработать ошибку из-за существующего title
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to insert chat")
+		return 0, sys.NewCommonError(errors.Wrap(err, "failed to insert chat").Error(), codes.Internal)
 	}
 
 	return chatId, nil
@@ -159,18 +159,14 @@ func (r repo) CreateMessage(ctx context.Context, chatID int64, sender string, te
 func (r repo) GetChatMessages(ctx context.Context, chatID, page, pageSize int64) ([]*serviceModel.ChatMessage, error) {
 	limit := uint64(pageSize)
 	offset := uint64((page - 1) * pageSize)
-	builderSelect := sq.Select(
-		idColumn,
+	builderSelect := prepareChatMessagesQuery(
+		chatID, idColumn,
 		messageChatIDColumn,
 		messageAuthorColumn,
 		messageContentColumn,
 		createdAtColumn,
 		updatedAtColumn,
-	).
-		From(messageTableName).
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{messageChatIDColumn: chatID}).
-		OrderBy("id DESC")
+	)
 
 	builderSelect = handleLimitAndOffset(builderSelect, limit, offset)
 
@@ -201,19 +197,34 @@ func (r repo) GetChatMessages(ctx context.Context, chatID, page, pageSize int64)
 }
 
 func (r repo) GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, error) {
+	builderSelect := prepareChatMessagesQuery(chatID, fmt.Sprintf("COUNT(%s)", idColumn))
+
+	query, args, err := builderSelect.ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("failed to build query: %w", err)
+	}
+
 	q := db.Query{
 		Name:     "chat_messages_count",
-		QueryRow: "SELECT COUNT(id) FROM message WHERE chat_id = $1;",
+		QueryRow: query,
 	}
 
 	var count uint64
 
-	err := r.db.DB().QueryRowContextScan(ctx, &count, q, chatID)
+	err = r.db.DB().QueryRowContextScan(ctx, &count, q, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count chat messages")
 	}
 
 	return count, nil
+}
+
+func prepareChatMessagesQuery(chatID int64, selects ...string) sq.SelectBuilder {
+	return sq.Select(selects...).
+		From(messageTableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{messageChatIDColumn: chatID}).
+		OrderBy("id DESC")
 }
 
 func (r repo) CheckUserChat(ctx context.Context, chatID int64, username string) (bool, error) {
