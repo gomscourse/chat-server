@@ -166,7 +166,7 @@ func (r repo) GetChatMessages(ctx context.Context, chatID, page, pageSize int64)
 		messageContentColumn,
 		createdAtColumn,
 		updatedAtColumn,
-	)
+	).OrderBy("id DESC")
 
 	builderSelect = handleLimitAndOffset(builderSelect, limit, offset)
 
@@ -223,8 +223,7 @@ func prepareChatMessagesQuery(chatID int64, selects ...string) sq.SelectBuilder 
 	return sq.Select(selects...).
 		From(messageTableName).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{messageChatIDColumn: chatID}).
-		OrderBy("id DESC")
+		Where(sq.Eq{messageChatIDColumn: chatID})
 }
 
 func (r repo) CheckUserChat(ctx context.Context, chatID int64, username string) (bool, error) {
