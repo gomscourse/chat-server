@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	descAccess "github.com/gomscourse/auth/pkg/access_v1"
+	descUser "github.com/gomscourse/auth/pkg/user_v1"
 	chatApi "github.com/gomscourse/chat-server/internal/api/chat"
 	"github.com/gomscourse/chat-server/internal/config"
 	"github.com/gomscourse/chat-server/internal/config/env"
@@ -31,6 +32,7 @@ type serviceProvider struct {
 	chatService    service.ChatService
 	chatImpl       *chatApi.Implementation
 	accessClient   descAccess.AccessV1Client
+	userClient     descUser.UserV1Client
 }
 
 func newServiceProvider() *serviceProvider {
@@ -100,7 +102,7 @@ func (sp *serviceProvider) ChatRepository(ctx context.Context) repository.ChatRe
 
 func (sp *serviceProvider) ChatService(ctx context.Context) service.ChatService {
 	if sp.chatService == nil {
-		sp.chatService = chatService.NewChatService(sp.ChatRepository(ctx), sp.TxManager(ctx))
+		sp.chatService = chatService.NewChatService(sp.ChatRepository(ctx), sp.TxManager(ctx), sp)
 	}
 
 	return sp.chatService
@@ -122,7 +124,7 @@ func (sp *serviceProvider) AccessClient() descAccess.AccessV1Client {
 		}
 
 		conn, err := grpc.Dial(
-			sp.GRPCConfig().AccessClientAddress(),
+			sp.GRPCConfig().AuthServiceAddress(),
 			grpc.WithTransportCredentials(creds),
 			grpc.WithUnaryInterceptor(
 				otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer()),
@@ -137,4 +139,39 @@ func (sp *serviceProvider) AccessClient() descAccess.AccessV1Client {
 	}
 
 	return sp.accessClient
+}
+
+func (sp *serviceProvider) UserClient() descUser.UserV1Client {
+	if sp.userClient == nil {
+		creds, err := credentials.NewClientTLSFromFile("service.pem", "")
+		if err != nil {
+			log.Fatalf("could not process the credentials: %v", err)
+		}
+
+		conn, err := grpc.Dial(
+			sp.GRPCConfig().AuthServiceAddress(),
+			grpc.WithTransportCredentials(creds),
+			grpc.WithUnaryInterceptor(
+				otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer()),
+			),
+		)
+
+		if err != nil {
+			log.Fatalf("failed to initialize user client: %s", err.Error())
+		}
+
+		sp.userClient = descUser.NewUserV1Client(conn)
+	}
+
+	return sp.userClient
+}
+
+func (sp *serviceProvider) CheckUsersExistence(ctx context.Context, usernames []string) error {
+	_, err := sp.UserClient().CheckUsersExistence(
+		ctx, &descUser.CheckUsersExistenceRequest{
+			Usernames: usernames,
+		},
+	)
+
+	return err
 }

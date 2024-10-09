@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"context"
 	"github.com/gomscourse/chat-server/internal/model"
 	"github.com/gomscourse/chat-server/internal/repository"
 	"github.com/gomscourse/chat-server/internal/service"
@@ -8,14 +9,19 @@ import (
 	"sync"
 )
 
+type UserClient interface {
+	CheckUsersExistence(ctx context.Context, usernames []string) error
+}
+
 type Chat struct {
 	streams map[string]service.Stream
 	m       sync.RWMutex
 }
 
 type chatService struct {
-	repo      repository.ChatRepository
-	txManager db.TxManager
+	repo       repository.ChatRepository
+	txManager  db.TxManager
+	userClient UserClient
 
 	channels  map[int64]chan *model.ChatMessage
 	mxChannel sync.RWMutex
@@ -24,12 +30,13 @@ type chatService struct {
 	mxChat sync.RWMutex
 }
 
-func NewChatService(repo repository.ChatRepository, manager db.TxManager) service.ChatService {
+func NewChatService(repo repository.ChatRepository, manager db.TxManager, userClient UserClient) service.ChatService {
 	return &chatService{
-		repo:      repo,
-		txManager: manager,
-		channels:  make(map[int64]chan *model.ChatMessage),
-		chats:     make(map[int64]*Chat),
+		repo:       repo,
+		txManager:  manager,
+		userClient: userClient,
+		channels:   make(map[int64]chan *model.ChatMessage),
+		chats:      make(map[int64]*Chat),
 	}
 }
 

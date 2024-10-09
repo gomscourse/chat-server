@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/gojuno/minimock/v3 v3.3.6
-	github.com/gomscourse/auth v0.0.0-20240602152748-1c080e7c0143
+	github.com/gomscourse/auth v1.0.0
 	github.com/gomscourse/common v1.0.8
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645

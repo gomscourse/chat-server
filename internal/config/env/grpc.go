@@ -60,7 +60,7 @@ func (cfg *grpcConfig) Address() string {
 	return net.JoinHostPort(cfg.host, cfg.port)
 }
 
-func (cfg *grpcConfig) AccessClientAddress() string {
+func (cfg *grpcConfig) AuthServiceAddress() string {
 	return net.JoinHostPort(cfg.accessClientHost, cfg.accessClientPort)
 }
 
