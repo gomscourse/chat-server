@@ -22,13 +22,13 @@ func (s *chatService) GetAvailableChatsAndCount(
 
 	go func() {
 		var err error
-		chats, err = s.GetChats(ctx, username, page, pageSize)
+		chats, err = s.repo.GetChats(ctx, username, page, pageSize)
 		errChan <- err
 	}()
 
 	go func() {
 		var err error
-		count, err = s.GetChatsCount(ctx, username)
+		count, err = s.repo.GetChatsCount(ctx, username)
 		errChan <- err
 	}()
 
@@ -43,15 +43,4 @@ func (s *chatService) GetAvailableChatsAndCount(
 	}
 
 	return chats, count, nil
-}
-
-func (s *chatService) GetChats(ctx context.Context, username string, page, pageSize int64) (
-	[]*serviceModel.Chat,
-	error,
-) {
-	return s.repo.GetChats(ctx, username, page, pageSize)
-}
-
-func (s *chatService) GetChatsCount(ctx context.Context, username string) (uint64, error) {
-	return s.repo.GetChatsCount(ctx, username)
 }

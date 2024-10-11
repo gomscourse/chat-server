@@ -27,7 +27,6 @@ func TestSendMessage(t *testing.T) {
 	var (
 		ctx       = context.Background()
 		mc        = minimock.NewController(t)
-		from      = gofakeit.Name()
 		text      = gofakeit.Email()
 		timestamp = time.Now()
 		chatID    = gofakeit.Int64()
@@ -35,7 +34,6 @@ func TestSendMessage(t *testing.T) {
 		serviceError = fmt.Errorf("service send message error")
 
 		req = &desc.SendMessageRequest{
-			From:      from,
 			Text:      text,
 			Timestamp: timestamppb.New(timestamp),
 			ChatID:    chatID,
@@ -63,7 +61,7 @@ func TestSendMessage(t *testing.T) {
 			err:  nil,
 			chatServiceMock: func(mc *minimock.Controller) service.ChatService {
 				mock := serviceMocks.NewChatServiceMock(t)
-				mock.SendMessageMock.Expect(ctx, from, text, chatID).Return(nil)
+				mock.SendMessageMock.Expect(ctx, text, chatID).Return(nil)
 				return mock
 			},
 		},
@@ -77,7 +75,7 @@ func TestSendMessage(t *testing.T) {
 			err:  serviceError,
 			chatServiceMock: func(mc *minimock.Controller) service.ChatService {
 				mock := serviceMocks.NewChatServiceMock(t)
-				mock.SendMessageMock.Expect(ctx, from, text, chatID).Return(serviceError)
+				mock.SendMessageMock.Expect(ctx, text, chatID).Return(serviceError)
 				return mock
 			},
 		},

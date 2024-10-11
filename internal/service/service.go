@@ -5,6 +5,10 @@ import (
 	serviceModel "github.com/gomscourse/chat-server/internal/model"
 )
 
+type UserClient interface {
+	CheckUsersExistence(ctx context.Context, usernames []string) error
+}
+
 type ChatService interface {
 	CreateChat(ctx context.Context, usernames []string, title string) (int64, error)
 	DeleteChat(ctx context.Context, chatID int64) error
@@ -20,6 +24,7 @@ type ChatService interface {
 	GetChatMessages(ctx context.Context, chatID, page, pageSize int64) ([]*serviceModel.ChatMessage, error)
 	GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, error)
 	ConnectChat(stream Stream, chatID int64) error
+	InitMessagesChan(chatID int64) chan *serviceModel.ChatMessage
 }
 
 type Stream interface {

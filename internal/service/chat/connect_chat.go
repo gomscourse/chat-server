@@ -18,7 +18,7 @@ func (s *chatService) ConnectChat(stream service.Stream, chatID int64) error {
 		return err
 	}
 
-	chatChan := s.initMessagesChan(chatID)
+	chatChan := s.InitMessagesChan(chatID)
 
 	s.mxChat.RLock()
 	if _, okChat := s.chats[chatID]; !okChat {

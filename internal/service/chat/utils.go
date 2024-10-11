@@ -9,7 +9,7 @@ import (
 	"github.com/gomscourse/common/pkg/sys/codes"
 )
 
-func (s *chatService) initMessagesChan(chatID int64) chan *serviceModel.ChatMessage {
+func (s *chatService) InitMessagesChan(chatID int64) chan *serviceModel.ChatMessage {
 	s.mxChannel.RLock()
 	chatChan, ok := s.channels[chatID]
 	fmt.Println(chatChan)

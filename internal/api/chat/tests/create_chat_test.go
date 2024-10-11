@@ -25,6 +25,7 @@ func TestCreateChat(t *testing.T) {
 		ctx       = context.Background()
 		mc        = minimock.NewController(t)
 		usernames = []string{gofakeit.Name(), gofakeit.Name(), gofakeit.Name()}
+		chatTitle = gofakeit.Name()
 		id        = gofakeit.Int64()
 
 		serviceError = fmt.Errorf("service error")
@@ -57,7 +58,7 @@ func TestCreateChat(t *testing.T) {
 			err:  nil,
 			chatServiceMock: func(mc *minimock.Controller) service.ChatService {
 				mock := serviceMocks.NewChatServiceMock(t)
-				mock.CreateChatMock.Expect(ctx, usernames).Return(id, nil)
+				mock.CreateChatMock.Expect(ctx, usernames, chatTitle).Return(id, nil)
 				return mock
 			},
 		},
@@ -71,7 +72,7 @@ func TestCreateChat(t *testing.T) {
 			err:  serviceError,
 			chatServiceMock: func(mc *minimock.Controller) service.ChatService {
 				mock := serviceMocks.NewChatServiceMock(t)
-				mock.CreateChatMock.Expect(ctx, usernames).Return(0, serviceError)
+				mock.CreateChatMock.Expect(ctx, usernames, chatTitle).Return(0, serviceError)
 				return mock
 			},
 		},

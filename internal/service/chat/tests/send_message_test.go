@@ -2,14 +2,20 @@ package tests
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/brianvoe/gofakeit"
 	"github.com/gojuno/minimock/v3"
+	"github.com/gomscourse/chat-server/internal/context_keys"
+	"github.com/gomscourse/chat-server/internal/model"
 	"github.com/gomscourse/chat-server/internal/repository"
 	repositoryMocks "github.com/gomscourse/chat-server/internal/repository/mocks"
+	"github.com/gomscourse/chat-server/internal/service"
 	chatService "github.com/gomscourse/chat-server/internal/service/chat"
+	serviceMocks "github.com/gomscourse/chat-server/internal/service/mocks"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func TestSendMessage(t *testing.T) {
@@ -22,13 +28,25 @@ func TestSendMessage(t *testing.T) {
 	}
 
 	var (
-		ctx    = context.Background()
-		mc     = minimock.NewController(t)
-		id     = gofakeit.Int64()
-		sender = gofakeit.Name()
-		text   = gofakeit.Email()
+		author  = gofakeit.Name()
+		ctx     = context.WithValue(context.Background(), context_keys.UsernameKey, author)
+		mc      = minimock.NewController(t)
+		msgID   = gofakeit.Int64()
+		chatID  = gofakeit.Int64()
+		content = gofakeit.Email()
+
+		ch = make(chan *model.ChatMessage, 100)
 
 		sendError = fmt.Errorf("repo error delete")
+
+		msg = &model.ChatMessage{
+			ID:        msgID,
+			ChatID:    chatID,
+			Author:    author,
+			Content:   content,
+			UpdatedAt: sql.NullTime{},
+			CreatedAt: time.Now(),
+		}
 	)
 
 	t.Cleanup(mc.Finish)
@@ -37,20 +55,27 @@ func TestSendMessage(t *testing.T) {
 		name               string
 		args               args
 		err                error
+		want               *model.ChatMessage
 		chatRepositoryMock chatRepositoryMockFunc
+		chatServiceMock    chatServiceMockFunc
 	}{
 		{
 			name: "success case",
 			args: args{
 				ctx:    ctx,
-				id:     id,
-				sender: sender,
-				text:   text,
+				id:     chatID,
+				sender: author,
+				text:   content,
 			},
 			err: nil,
 			chatRepositoryMock: func(mc *minimock.Controller) repository.ChatRepository {
 				mock := repositoryMocks.NewChatRepositoryMock(t)
-				mock.CreateMessageMock.Expect(ctx, id, sender, text).Return(1, nil)
+				mock.CreateMessageMock.Expect(ctx, chatID, author, content).Return(msg, nil)
+				return mock
+			},
+			chatServiceMock: func(mc *minimock.Controller) service.ChatService {
+				mock := serviceMocks.NewChatServiceMock(t)
+				mock.InitMessagesChanMock.Expect(chatID).Return(ch)
 				return mock
 			},
 		},
@@ -58,14 +83,14 @@ func TestSendMessage(t *testing.T) {
 			name: "repo error case",
 			args: args{
 				ctx:    ctx,
-				id:     id,
-				sender: sender,
-				text:   text,
+				id:     chatID,
+				sender: author,
+				text:   content,
 			},
 			err: sendError,
 			chatRepositoryMock: func(mc *minimock.Controller) repository.ChatRepository {
 				mock := repositoryMocks.NewChatRepositoryMock(t)
-				mock.CreateMessageMock.Expect(ctx, id, sender, text).Return(0, sendError)
+				mock.CreateMessageMock.Expect(ctx, chatID, author, content).Return(nil, sendError)
 				return mock
 			},
 		},
@@ -78,10 +103,14 @@ func TestSendMessage(t *testing.T) {
 				t.Parallel()
 
 				chatRepoMock := tt.chatRepositoryMock(mc)
-				service := chatService.NewTestService(chatRepoMock)
+				srv := chatService.NewTestService(chatRepoMock)
 
-				err := service.SendMessage(tt.args.ctx, tt.args.sender, tt.args.text, tt.args.id)
+				err := srv.SendMessage(tt.args.ctx, tt.args.text, tt.args.id)
 				require.Equal(t, tt.err, err)
+				if err != nil {
+					m := <-ch
+					require.Equal(t, tt.want, m)
+				}
 			},
 		)
 	}

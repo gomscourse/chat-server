@@ -16,7 +16,7 @@ func (s *chatService) SendMessage(ctx context.Context, text string, chatID int64
 		return err
 	}
 
-	chatChan := s.initMessagesChan(chatID)
+	chatChan := s.InitMessagesChan(chatID)
 
 	go func() {
 		chatChan <- msg
