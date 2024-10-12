@@ -90,10 +90,7 @@ func TestCreateChat(t *testing.T) {
 				return mock
 			},
 			chatRepositoryMock: func(mc *minimock.Controller) repository.ChatRepository {
-				mock := repositoryMocks.NewChatRepositoryMock(t)
-				mock.CreateChatMock.Expect(ctx, title).Return(id, nil)
-				mock.AddUsersToChatMock.Expect(ctx, id, usernames).Return(nil)
-				return mock
+				return repositoryMocks.NewChatRepositoryMock(t)
 			},
 		},
 		{
@@ -105,6 +102,11 @@ func TestCreateChat(t *testing.T) {
 			},
 			want: 0,
 			err:  repoErrorCreate,
+			userClientMock: func(mc *minimock.Controller) service.UserClient {
+				mock := serviceMocks.NewUserClientMock(t)
+				mock.CheckUsersExistenceMock.Expect(ctx, usernames).Return(nil)
+				return mock
+			},
 			chatRepositoryMock: func(mc *minimock.Controller) repository.ChatRepository {
 				mock := repositoryMocks.NewChatRepositoryMock(t)
 				mock.CreateChatMock.Expect(ctx, title).Return(0, repoErrorCreate)
@@ -120,6 +122,11 @@ func TestCreateChat(t *testing.T) {
 			},
 			want: 0,
 			err:  repoErrorAdd,
+			userClientMock: func(mc *minimock.Controller) service.UserClient {
+				mock := serviceMocks.NewUserClientMock(t)
+				mock.CheckUsersExistenceMock.Expect(ctx, usernames).Return(nil)
+				return mock
+			},
 			chatRepositoryMock: func(mc *minimock.Controller) repository.ChatRepository {
 				mock := repositoryMocks.NewChatRepositoryMock(t)
 				mock.CreateChatMock.Expect(ctx, title).Return(id, nil)

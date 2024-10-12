@@ -25,6 +25,7 @@ type ChatService interface {
 	GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, error)
 	ConnectChat(stream Stream, chatID int64) error
 	InitMessagesChan(chatID int64) chan *serviceModel.ChatMessage
+	GetChannels() map[int64]chan *serviceModel.ChatMessage
 }
 
 type Stream interface {

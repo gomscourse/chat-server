@@ -40,7 +40,10 @@ func NewChatService(
 }
 
 func NewTestService(deps ...interface{}) service.ChatService {
-	srv := chatService{}
+	srv := chatService{
+		channels: make(map[int64]chan *model.ChatMessage),
+		chats:    make(map[int64]*Chat),
+	}
 
 	for _, v := range deps {
 		switch s := v.(type) {

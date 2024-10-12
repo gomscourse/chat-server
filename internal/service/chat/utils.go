@@ -46,3 +46,7 @@ func (s *chatService) checkUserChatAvailability(ctx context.Context, chatID int6
 
 	return s.checkChatAvailability(ctx, chatID, username)
 }
+
+func (s *chatService) GetChannels() map[int64]chan *serviceModel.ChatMessage {
+	return s.channels
+}

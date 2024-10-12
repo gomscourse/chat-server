@@ -10,9 +10,7 @@ import (
 	"github.com/gomscourse/chat-server/internal/model"
 	"github.com/gomscourse/chat-server/internal/repository"
 	repositoryMocks "github.com/gomscourse/chat-server/internal/repository/mocks"
-	"github.com/gomscourse/chat-server/internal/service"
 	chatService "github.com/gomscourse/chat-server/internal/service/chat"
-	serviceMocks "github.com/gomscourse/chat-server/internal/service/mocks"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -35,9 +33,7 @@ func TestSendMessage(t *testing.T) {
 		chatID  = gofakeit.Int64()
 		content = gofakeit.Email()
 
-		ch = make(chan *model.ChatMessage, 100)
-
-		sendError = fmt.Errorf("repo error delete")
+		sendError = fmt.Errorf("repo error")
 
 		msg = &model.ChatMessage{
 			ID:        msgID,
@@ -67,15 +63,11 @@ func TestSendMessage(t *testing.T) {
 				sender: author,
 				text:   content,
 			},
-			err: nil,
+			want: msg,
+			err:  nil,
 			chatRepositoryMock: func(mc *minimock.Controller) repository.ChatRepository {
 				mock := repositoryMocks.NewChatRepositoryMock(t)
 				mock.CreateMessageMock.Expect(ctx, chatID, author, content).Return(msg, nil)
-				return mock
-			},
-			chatServiceMock: func(mc *minimock.Controller) service.ChatService {
-				mock := serviceMocks.NewChatServiceMock(t)
-				mock.InitMessagesChanMock.Expect(chatID).Return(ch)
 				return mock
 			},
 		},
@@ -107,9 +99,18 @@ func TestSendMessage(t *testing.T) {
 
 				err := srv.SendMessage(tt.args.ctx, tt.args.text, tt.args.id)
 				require.Equal(t, tt.err, err)
-				if err != nil {
-					m := <-ch
-					require.Equal(t, tt.want, m)
+				if err == nil {
+					ch, ok := srv.GetChannels()[tt.args.id]
+					if !ok {
+						t.Fatal("Channel wasn't created")
+					}
+
+					select {
+					case m := <-ch:
+						require.Equal(t, tt.want, m)
+					case <-time.After(1 * time.Second):
+						t.Fatal("No message was sent to the channel")
+					}
 				}
 			},
 		)

@@ -44,6 +44,12 @@ type ChatServiceMock struct {
 	beforeGetAvailableChatsAndCountCounter uint64
 	GetAvailableChatsAndCountMock          mChatServiceMockGetAvailableChatsAndCount
 
+	funcGetChannels          func() (m1 map[int64]chan *serviceModel.ChatMessage)
+	inspectFuncGetChannels   func()
+	afterGetChannelsCounter  uint64
+	beforeGetChannelsCounter uint64
+	GetChannelsMock          mChatServiceMockGetChannels
+
 	funcGetChatMessages          func(ctx context.Context, chatID int64, page int64, pageSize int64) (cpa1 []*serviceModel.ChatMessage, err error)
 	inspectFuncGetChatMessages   func(ctx context.Context, chatID int64, page int64, pageSize int64)
 	afterGetChatMessagesCounter  uint64
@@ -94,6 +100,8 @@ func NewChatServiceMock(t minimock.Tester) *ChatServiceMock {
 
 	m.GetAvailableChatsAndCountMock = mChatServiceMockGetAvailableChatsAndCount{mock: m}
 	m.GetAvailableChatsAndCountMock.callArgs = []*ChatServiceMockGetAvailableChatsAndCountParams{}
+
+	m.GetChannelsMock = mChatServiceMockGetChannels{mock: m}
 
 	m.GetChatMessagesMock = mChatServiceMockGetChatMessages{mock: m}
 	m.GetChatMessagesMock.callArgs = []*ChatServiceMockGetChatMessagesParams{}
@@ -981,6 +989,149 @@ func (m *ChatServiceMock) MinimockGetAvailableChatsAndCountInspect() {
 	// if func was set then invocations count should be greater than zero
 	if m.funcGetAvailableChatsAndCount != nil && mm_atomic.LoadUint64(&m.afterGetAvailableChatsAndCountCounter) < 1 {
 		m.t.Error("Expected call to ChatServiceMock.GetAvailableChatsAndCount")
+	}
+}
+
+type mChatServiceMockGetChannels struct {
+	mock               *ChatServiceMock
+	defaultExpectation *ChatServiceMockGetChannelsExpectation
+	expectations       []*ChatServiceMockGetChannelsExpectation
+}
+
+// ChatServiceMockGetChannelsExpectation specifies expectation struct of the ChatService.GetChannels
+type ChatServiceMockGetChannelsExpectation struct {
+	mock *ChatServiceMock
+
+	results *ChatServiceMockGetChannelsResults
+	Counter uint64
+}
+
+// ChatServiceMockGetChannelsResults contains results of the ChatService.GetChannels
+type ChatServiceMockGetChannelsResults struct {
+	m1 map[int64]chan *serviceModel.ChatMessage
+}
+
+// Expect sets up expected params for ChatService.GetChannels
+func (mmGetChannels *mChatServiceMockGetChannels) Expect() *mChatServiceMockGetChannels {
+	if mmGetChannels.mock.funcGetChannels != nil {
+		mmGetChannels.mock.t.Fatalf("ChatServiceMock.GetChannels mock is already set by Set")
+	}
+
+	if mmGetChannels.defaultExpectation == nil {
+		mmGetChannels.defaultExpectation = &ChatServiceMockGetChannelsExpectation{}
+	}
+
+	return mmGetChannels
+}
+
+// Inspect accepts an inspector function that has same arguments as the ChatService.GetChannels
+func (mmGetChannels *mChatServiceMockGetChannels) Inspect(f func()) *mChatServiceMockGetChannels {
+	if mmGetChannels.mock.inspectFuncGetChannels != nil {
+		mmGetChannels.mock.t.Fatalf("Inspect function is already set for ChatServiceMock.GetChannels")
+	}
+
+	mmGetChannels.mock.inspectFuncGetChannels = f
+
+	return mmGetChannels
+}
+
+// Return sets up results that will be returned by ChatService.GetChannels
+func (mmGetChannels *mChatServiceMockGetChannels) Return(m1 map[int64]chan *serviceModel.ChatMessage) *ChatServiceMock {
+	if mmGetChannels.mock.funcGetChannels != nil {
+		mmGetChannels.mock.t.Fatalf("ChatServiceMock.GetChannels mock is already set by Set")
+	}
+
+	if mmGetChannels.defaultExpectation == nil {
+		mmGetChannels.defaultExpectation = &ChatServiceMockGetChannelsExpectation{mock: mmGetChannels.mock}
+	}
+	mmGetChannels.defaultExpectation.results = &ChatServiceMockGetChannelsResults{m1}
+	return mmGetChannels.mock
+}
+
+// Set uses given function f to mock the ChatService.GetChannels method
+func (mmGetChannels *mChatServiceMockGetChannels) Set(f func() (m1 map[int64]chan *serviceModel.ChatMessage)) *ChatServiceMock {
+	if mmGetChannels.defaultExpectation != nil {
+		mmGetChannels.mock.t.Fatalf("Default expectation is already set for the ChatService.GetChannels method")
+	}
+
+	if len(mmGetChannels.expectations) > 0 {
+		mmGetChannels.mock.t.Fatalf("Some expectations are already set for the ChatService.GetChannels method")
+	}
+
+	mmGetChannels.mock.funcGetChannels = f
+	return mmGetChannels.mock
+}
+
+// GetChannels implements service.ChatService
+func (mmGetChannels *ChatServiceMock) GetChannels() (m1 map[int64]chan *serviceModel.ChatMessage) {
+	mm_atomic.AddUint64(&mmGetChannels.beforeGetChannelsCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetChannels.afterGetChannelsCounter, 1)
+
+	if mmGetChannels.inspectFuncGetChannels != nil {
+		mmGetChannels.inspectFuncGetChannels()
+	}
+
+	if mmGetChannels.GetChannelsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetChannels.GetChannelsMock.defaultExpectation.Counter, 1)
+
+		mm_results := mmGetChannels.GetChannelsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetChannels.t.Fatal("No results are set for the ChatServiceMock.GetChannels")
+		}
+		return (*mm_results).m1
+	}
+	if mmGetChannels.funcGetChannels != nil {
+		return mmGetChannels.funcGetChannels()
+	}
+	mmGetChannels.t.Fatalf("Unexpected call to ChatServiceMock.GetChannels.")
+	return
+}
+
+// GetChannelsAfterCounter returns a count of finished ChatServiceMock.GetChannels invocations
+func (mmGetChannels *ChatServiceMock) GetChannelsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetChannels.afterGetChannelsCounter)
+}
+
+// GetChannelsBeforeCounter returns a count of ChatServiceMock.GetChannels invocations
+func (mmGetChannels *ChatServiceMock) GetChannelsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetChannels.beforeGetChannelsCounter)
+}
+
+// MinimockGetChannelsDone returns true if the count of the GetChannels invocations corresponds
+// the number of defined expectations
+func (m *ChatServiceMock) MinimockGetChannelsDone() bool {
+	for _, e := range m.GetChannelsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetChannelsMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetChannelsCounter) < 1 {
+		return false
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetChannels != nil && mm_atomic.LoadUint64(&m.afterGetChannelsCounter) < 1 {
+		return false
+	}
+	return true
+}
+
+// MinimockGetChannelsInspect logs each unmet expectation
+func (m *ChatServiceMock) MinimockGetChannelsInspect() {
+	for _, e := range m.GetChannelsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Error("Expected call to ChatServiceMock.GetChannels")
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetChannelsMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetChannelsCounter) < 1 {
+		m.t.Error("Expected call to ChatServiceMock.GetChannels")
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetChannels != nil && mm_atomic.LoadUint64(&m.afterGetChannelsCounter) < 1 {
+		m.t.Error("Expected call to ChatServiceMock.GetChannels")
 	}
 }
 
@@ -2084,6 +2235,8 @@ func (m *ChatServiceMock) MinimockFinish() {
 
 			m.MinimockGetAvailableChatsAndCountInspect()
 
+			m.MinimockGetChannelsInspect()
+
 			m.MinimockGetChatMessagesInspect()
 
 			m.MinimockGetChatMessagesAndCountInspect()
@@ -2121,6 +2274,7 @@ func (m *ChatServiceMock) minimockDone() bool {
 		m.MinimockCreateChatDone() &&
 		m.MinimockDeleteChatDone() &&
 		m.MinimockGetAvailableChatsAndCountDone() &&
+		m.MinimockGetChannelsDone() &&
 		m.MinimockGetChatMessagesDone() &&
 		m.MinimockGetChatMessagesAndCountDone() &&
 		m.MinimockGetChatMessagesCountDone() &&

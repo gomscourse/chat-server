@@ -31,6 +31,7 @@ func TestCreateChat(t *testing.T) {
 		serviceError = fmt.Errorf("service error")
 
 		req = &desc.CreateRequest{
+			Title:     chatTitle,
 			Usernames: usernames,
 		}
 

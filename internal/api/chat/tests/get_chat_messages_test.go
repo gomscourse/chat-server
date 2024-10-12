@@ -36,8 +36,7 @@ func TestGetChatMessages(t *testing.T) {
 		pageSize      = gofakeit.Int64()
 		messagesCount = gofakeit.Uint64()
 
-		serviceRetrieveError = fmt.Errorf("service get messages error")
-		serviceCountError    = fmt.Errorf("service get messages error")
+		serviceError = fmt.Errorf("service error")
 
 		messageID      = gofakeit.Int64()
 		messageChatID  = gofakeit.Int64()
@@ -97,38 +96,25 @@ func TestGetChatMessages(t *testing.T) {
 			err:  nil,
 			chatServiceMock: func(mc *minimock.Controller) service.ChatService {
 				mock := serviceMocks.NewChatServiceMock(t)
-				mock.GetChatMessagesMock.Expect(ctx, id, page, pageSize).Return(serviceMessages, nil)
-				mock.GetChatMessagesCountMock.Expect(ctx, id).Return(messagesCount, nil)
+				mock.GetChatMessagesAndCountMock.Expect(ctx, id, page, pageSize).Return(
+					serviceMessages,
+					messagesCount,
+					nil,
+				)
 				return mock
 			},
 		},
 		{
-			name: "service error get chat messages case",
+			name: "service error case",
 			args: args{
 				ctx: ctx,
 				req: req,
 			},
 			want: nil,
-			err:  serviceRetrieveError,
+			err:  serviceError,
 			chatServiceMock: func(mc *minimock.Controller) service.ChatService {
 				mock := serviceMocks.NewChatServiceMock(t)
-				mock.GetChatMessagesMock.Expect(ctx, id, page, pageSize).Return(nil, serviceRetrieveError)
-				mock.GetChatMessagesCountMock.Expect(ctx, id).Return(messagesCount, nil)
-				return mock
-			},
-		},
-		{
-			name: "service error get chat messages count case",
-			args: args{
-				ctx: ctx,
-				req: req,
-			},
-			want: nil,
-			err:  serviceCountError,
-			chatServiceMock: func(mc *minimock.Controller) service.ChatService {
-				mock := serviceMocks.NewChatServiceMock(t)
-				mock.GetChatMessagesMock.Expect(ctx, id, page, pageSize).Return(serviceMessages, nil)
-				mock.GetChatMessagesCountMock.Expect(ctx, id).Return(0, serviceCountError)
+				mock.GetChatMessagesAndCountMock.Expect(ctx, id, page, pageSize).Return(nil, 0, serviceError)
 				return mock
 			},
 		},
