@@ -13,7 +13,7 @@ func (s *chatService) ConnectChat(stream service.Stream, chatID int64) error {
 		return err
 	}
 
-	err = s.checkChatAvailability(ctx, chatID, username)
+	err = s.CheckChatAvailability(ctx, chatID, username)
 	if err != nil {
 		return err
 	}

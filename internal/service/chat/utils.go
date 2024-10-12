@@ -9,6 +9,11 @@ import (
 	"github.com/gomscourse/common/pkg/sys/codes"
 )
 
+var UserNotInChatOrChatNotFoundError = sys.NewCommonError(
+	"chat not found or user is not member of chat",
+	codes.PermissionDenied,
+)
+
 func (s *chatService) InitMessagesChan(chatID int64) chan *serviceModel.ChatMessage {
 	s.mxChannel.RLock()
 	chatChan, ok := s.channels[chatID]
@@ -25,7 +30,7 @@ func (s *chatService) InitMessagesChan(chatID int64) chan *serviceModel.ChatMess
 	return chatChan
 }
 
-func (s *chatService) checkChatAvailability(ctx context.Context, chatID int64, username string) error {
+func (s *chatService) CheckChatAvailability(ctx context.Context, chatID int64, username string) error {
 	// проверить есть ли чат в базе и состоит ли пользователь в чате
 	exists, err := s.repo.CheckUserChat(ctx, chatID, username)
 	if err != nil {
@@ -33,18 +38,18 @@ func (s *chatService) checkChatAvailability(ctx context.Context, chatID int64, u
 	}
 	// если чата нет, либо пользователь не в чате - вернуть ошибку
 	if !exists {
-		return sys.NewCommonError("chat not found or user is not member of chat", codes.PermissionDenied)
+		return UserNotInChatOrChatNotFoundError
 	}
 	return nil
 }
 
-func (s *chatService) checkUserChatAvailability(ctx context.Context, chatID int64) error {
+func (s *chatService) CheckCtxUserChatAvailability(ctx context.Context, chatID int64) error {
 	username, err := helpers.GetCtxUser(ctx)
 	if err != nil {
 		return err
 	}
 
-	return s.checkChatAvailability(ctx, chatID, username)
+	return s.CheckChatAvailability(ctx, chatID, username)
 }
 
 func (s *chatService) GetChannels() map[int64]chan *serviceModel.ChatMessage {

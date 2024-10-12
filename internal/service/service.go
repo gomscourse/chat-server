@@ -21,11 +21,11 @@ type ChatService interface {
 	GetAvailableChatsAndCount(
 		ctx context.Context, page, pageSize int64,
 	) ([]*serviceModel.Chat, uint64, error)
-	GetChatMessages(ctx context.Context, chatID, page, pageSize int64) ([]*serviceModel.ChatMessage, error)
-	GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, error)
 	ConnectChat(stream Stream, chatID int64) error
 	InitMessagesChan(chatID int64) chan *serviceModel.ChatMessage
 	GetChannels() map[int64]chan *serviceModel.ChatMessage
+	CheckChatAvailability(ctx context.Context, chatID int64, username string) error
+	CheckCtxUserChatAvailability(ctx context.Context, chatID int64) error
 }
 
 type Stream interface {

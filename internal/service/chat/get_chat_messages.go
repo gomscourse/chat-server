@@ -9,7 +9,7 @@ func (s *chatService) GetChatMessagesAndCount(
 	ctx context.Context,
 	chatID, page, pageSize int64,
 ) ([]*serviceModel.ChatMessage, uint64, error) {
-	err := s.checkUserChatAvailability(ctx, chatID)
+	err := s.CheckCtxUserChatAvailability(ctx, chatID)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -21,13 +21,13 @@ func (s *chatService) GetChatMessagesAndCount(
 
 	go func() {
 		var err error
-		messages, err = s.GetChatMessages(ctx, chatID, page, pageSize)
+		messages, err = s.repo.GetChatMessages(ctx, chatID, page, pageSize)
 		errChan <- err
 	}()
 
 	go func() {
 		var err error
-		count, err = s.GetChatMessagesCount(ctx, chatID)
+		count, err = s.repo.GetChatMessagesCount(ctx, chatID)
 		errChan <- err
 	}()
 
@@ -42,15 +42,4 @@ func (s *chatService) GetChatMessagesAndCount(
 	}
 
 	return messages, count, nil
-}
-
-func (s *chatService) GetChatMessages(ctx context.Context, chatID, page, pageSize int64) (
-	[]*serviceModel.ChatMessage,
-	error,
-) {
-	return s.repo.GetChatMessages(ctx, chatID, page, pageSize)
-}
-
-func (s *chatService) GetChatMessagesCount(ctx context.Context, chatID int64) (uint64, error) {
-	return s.repo.GetChatMessagesCount(ctx, chatID)
 }
